@@ -3,7 +3,6 @@
 -- BitWig Controller Beta/Early
 local util = require "util"
 local lattice = require "lattice"
-local originalGridDrawArray = {}
 
 width = 16
 height = 16
@@ -17,13 +16,14 @@ g = grid.connect()
 
 dest = {"localhost", "6666"}
 
-gridDrawArray = {}
+clipDrawArray = {}
 playPulseValue = 0
+
 
 function init()
 
     transporton = false
-    arrangementView = false
+    arrangementView = true
 
     globalRecordArm = false
 
@@ -42,9 +42,9 @@ function init()
     altLaunch_held = false
 
 for x = 1,width do
-  gridDrawArray[x] = {}
+  clipDrawArray[x] = {}
     for y = 1,height do
-      gridDrawArray[x][y] = 0
+      clipDrawArray[x][y] = 0
     end
   end
 
@@ -71,9 +71,6 @@ for x = 1,width do
     end
     Grid_Redraw_Metro:start(1/60)
 
-    width = g.col
-    height = g.rows
-  
     osc.send(dest, "/refresh",{0})
     
     gridDirty = true
@@ -90,13 +87,17 @@ for x = 1,width do
 end
 
 function grid_array_data()
-  for x = 1, 16 do
-    for y = 1, g.rows - 2 do
-       local brightness = gridDrawArray[x][y]
+  --print ("grid array data is getting updated")
+  -- this is for drawing in the clips:
+    if arrangementView == true then
+        for x = 1, 16 do
+            for y = 1, 16 - 2 do
+                local brightness = clipDrawArray[x][y]
         --print("x:", x, "y:", y, "Brightness:", brightness)
-        g:led(x, y, brightness)
-    end
-  end
+                g:led(x, y, brightness)
+            end
+        end
+end
   --print("grid brightness updated")
   gridDirty = true
   end

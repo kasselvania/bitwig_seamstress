@@ -53,35 +53,56 @@ function Track:initTracks()
 end
 
 
--- function Track:setClipstate(clipIndex, value)
---     if self.clips[clipIndex] then
---         self.clips[clipIndex].state = value
---         self.clips_update = false
---         self:clipDrawUpdate(clipIndex)
---     end
---     -- if self.arm_update == false then
---     -- end
---     self:trackStatusDraws()
--- end
-
-function Track:setClipState(clipIndex, state)
-    if clipIndex >= 1 and clipIndex <= 16 then
-        self.clips[clipIndex] = { state = state }
-    else
-        print("Invalid clip index")
+function Track:setClipState(clipIndex, value)
+    -- if clipIndex >= 1 and clipIndex <=16 then
+    if folder == true then
+        self:fullTrackStatusDraw(self.folder, self.folder_update, 7)
     end
-    self:printclips()
+        self.clips[clipIndex].state = value
+        if self.folder == false and clipIndex <= 16 then
+            local clipLedValue = self.clips[clipIndex].state == 1 and 10 or 0
+            self:clipDrawUpdate(clipIndex, clipLedValue)
+            end
+        --print("in track no", self.trackNumber, "slot number", clipIndex, "is a", value)
+        self.clips_update = false
+    -- if self.arm_update == false then
+
+    -- end
+    -- self:trackStatusDraws()
 end
 
+function Track:clipDrawUpdate(clipIndex, clipLedValue)
+    if clipIndex >= 1 and clipIndex <= 16 then
+            clipDrawArray[clipIndex][self.trackNumber] = clipLedValue
+    --print("in track", y, "clip No", x, "is ", clipLedValue)
+    end
+    --     for x = 1, 16 do
+    --         for y = 1, 16 do
+    --             print("gridDrawArray[" .. x .. "][" .. y .. "] = " .. gridDrawArray[x][y])
+    --         end  
+    -- end
+        self.clips_update = true   
+        gridDirty = true
+end
 
+function Track:setTrackArm(value)
+    self.track_arm = value
+    -- self:checkClipValues()
+    --print("track no' are state", self.trackNumber, "is ", value)
+    self.arm_update = false
+end
 
--- function Track:clipDrawUpdate(clipIndex)
---     if self.folder == false and clipIndex <= 16 then
---         local clipLedValue = self.clips[clipIndex].state == 1 and 10 or 0
---         gridDrawArray[clipIndex][self.trackNumber] = clipLedValue
---         end
---         self.clips_update = true
+-- function FullArrayDraw()
+
+-- function Track:setClipState(clipIndex, state)
+--     if clipIndex >= 1 and clipIndex <= 16 then
+--         self.clips[clipIndex] = { state = state }
+--         --print("in track no", self.trackNumber, "slot number", clipIndex, "is a", state)
+--     else
+--         --print("Invalid clip index")
+--     end
 -- end
+
 
 -- function Track:printClipStates()
 --     print("Clip States for Track:")
@@ -111,12 +132,6 @@ end
 --     end
 -- end
 
--- function Track:setTrackArm(value)
---     self.track_arm = value
---     self:checkClipValues()
---     self.arm_update = false
--- end
-
 -- Track:armcheckingclips()
 
 
@@ -132,14 +147,14 @@ end
 function Track:setMute(value)
     self.mute = value
     self.mute_update = false
-    self:fullTrackStatusDraw(self.mute, self.mute_update, -5)
+    -- self:fullTrackStatusDraw(self.mute, self.mute_update, -5)
 end
 
 -- Method to mark if track is a folder
 function Track:setFolder(value)
     self.folder = value
     self.folder_update = false
-    self:fullTrackStatusDraw(self.folder, self.folder_update, 7)
+    -- self:fullTrackStatusDraw(self.folder, self.folder_update, 7)
 end
 
 
@@ -150,7 +165,7 @@ function Track:fullTrackStatusDraw(keystate, keystate_update, args)
                  end
             end
         keystate_update = true
-       -- print("I've updated the,", keystate, "gridArray Value for track ", self.trackNumber)
+      -- print("I've updated the,", keystate, "gridArray Value for track ", self.trackNumber)
 end
 
 function Track:setSolo(value)
