@@ -361,7 +361,7 @@ end
 
     if x>= 2 and y <= 14 and z == 1 and mute_screen == true then -- system for muting tracks
       osc.send(dest, "/track/"..(x-1).."/mute/-",{})
-    if x>=2 and y <=14 and z==0 and must_screen == true then
+    if x>=2 and y <=14 and z==0 and mute_screen == true then
       gridDirty = true
     end
   end
