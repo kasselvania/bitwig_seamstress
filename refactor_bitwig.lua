@@ -4,8 +4,7 @@
 local util = require "util"
 local lattice = require "lattice"
 
-width = 16
-height = 16
+
 
 
 local Track = require ("lib/Track")
@@ -21,6 +20,9 @@ playPulseValue = 0
 
 
 function init()
+
+  width = 16
+  height = 16
 
     transporton = false
     arrangementView = true

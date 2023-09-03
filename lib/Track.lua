@@ -55,8 +55,8 @@ end
 
 function Track:setClipState(clipIndex, value)
     -- if clipIndex >= 1 and clipIndex <=16 then
-    if folder == true then
-        self:fullTrackStatusDraw(self.folder, self.folder_update, 7)
+    if self.folder == true then
+        self:fullTrackStatusDraw(self.folder, self.folder_update, 6)
     end
         self.clips[clipIndex].state = value
         if self.folder == false and clipIndex <= 16 then
@@ -83,6 +83,18 @@ function Track:clipDrawUpdate(clipIndex, clipLedValue)
     -- end
         self.clips_update = true   
         gridDirty = true
+end
+
+function Track:fullTrackStatusDraw(keystate, keystate_update, args)
+    --print("The full track is passing for ", keystate)
+    if keystate_update == false and keystate == true then
+                for i = 1,16 do
+                        clipDrawArray[i][self.trackNumber] = args
+                 end
+            end
+        keystate_update = true
+        gridDirty = true
+      -- print("I've updated the,", keystate, "gridArray Value for track ", self.trackNumber)
 end
 
 function Track:setTrackArm(value)
@@ -158,15 +170,6 @@ function Track:setFolder(value)
 end
 
 
-function Track:fullTrackStatusDraw(keystate, keystate_update, args)
-    if keystate_update == false and keystate == true then
-                for i = 1,16 do
-                        gridDrawArray[i][self.trackNumber] = args
-                 end
-            end
-        keystate_update = true
-      -- print("I've updated the,", keystate, "gridArray Value for track ", self.trackNumber)
-end
 
 function Track:setSolo(value)
     self.solo = value
