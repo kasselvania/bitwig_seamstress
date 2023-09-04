@@ -49,8 +49,8 @@ function Track:getClips()
 end
 
 function Track:firstBootDraw()
-    if self.firstBoot and self.arm_received and self.clips_received and self.selected_received then
-        print("selected", self.track_arm, "for track", self.trackNumber)
+    if self.firstBoot and self.arm_received and self.clips_received and self.selected_received and self.mute_received then
+        --print("selected", self.track_arm, "for track", self.trackNumber)
         self:setTrackState()
         self.firstBoot = false
     end
@@ -126,12 +126,18 @@ function Track:setTrackState ()
             local change = "plus"
             self:adaptiveDrawUpdate(3, change)
         end
+        if self.mute == true and self.mute_update == false then
+            print("This track muted", self.trackNumber)
+            local change = "minus"
+            self:adaptiveDrawUpdate(6, change)
+        end
         if self.selected == true and self.selected_update == false then
-            print("This track selected", self.trackNumber)
+            --print("This track selected", self.trackNumber)
             local change = "all plus"
             self:adaptiveDrawUpdate(3, change)
         end
     end
+    self.mute_update = false
     self.clips_update = false
     self.arm_update = false
     self.folder_update = false
@@ -213,28 +219,41 @@ function Track:adaptiveDrawUpdate(value, calc)
         for i = 1,16 do
             if self.clips[i].state == 0 then
                 -- print("this is tracking that we have done the math...")
-                clipDrawArray[i][self.trackNumber] = math.min((self:addition(clipDrawArray[i][self.trackNumber], value)),15)
+                clipDrawArray[i][self.trackNumber] = self:addition(clipDrawArray[i][self.trackNumber], value)
                -- print("Empty clip number", i, "has been brightened")
                 end
             end
         end
        if calc == "all plus" then
         for i = 1,16 do
-            clipDrawArray[i][self.trackNumber] = math.min((self:addition(clipDrawArray[i][self.trackNumber], value)),15)
+            clipDrawArray[i][self.trackNumber] = self:addition(clipDrawArray[i][self.trackNumber], value)
         end
        end
+       if calc == "minus" then
+        for i = 1,16 do
+            if self.clips[i].state == 1 then
+                clipDrawArray[i][self.trackNumber] = self:subtraction(clipDrawArray[i][self.trackNumber], value)
+            end
+        end
+       end
+    self.mute_update = true
     self.selected_update = true
     self.arm_update = true
 end
 
 function Track:addition(a,b)
-    print(a,b)
-    return a + b
+    --print(a,b)
+    return math.min(a + b,15)
+end
+
+function Track:subtraction(a,b)
+    --print(a,b)
+    return math.max(a - b,0)
 end
 
 
 function Track:setSelected(value)
-    print("track", self.trackNumber, "was registered by main script")
+    --print("track", self.trackNumber, "was registered by main script")
     self.selected_received = true
     self.selected_update = false
     self.select = value
@@ -251,9 +270,16 @@ end
 
 
 function Track:setMute(value)
---     self.mute = value
---     -- self.mute_update = false
---     -- self:fullTrackStatusDraw(self.mute, self.mute_update, -5)
+    self.mute_received = true
+    self.mute_update = false
+    self.mute = value
+   -- print("a track was armed")
+   if self.firstBoot == true then
+    self:firstBootDraw()
+   else 
+   --print("i've passed the first boot, and now doint the set track state")
+    self:setTrackState()
+   end
 end
 
 -- -- Method to mark if track is a folder
