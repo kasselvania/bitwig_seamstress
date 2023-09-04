@@ -86,7 +86,9 @@ function Track:setTrackArm(value)
    -- print("a track was armed")
    if self.firstBoot == true then
     self:firstBootDraw()
-   else self:setTrackState()
+   else 
+    print("i've passed the first boot, and now doint the set track state")
+    self:setTrackState()
    end
     --print("track no' are state", self.trackNumber, "is ", value)
 
@@ -103,20 +105,23 @@ end
 
 
 function Track:setTrackState ()
+    print("running track state function")
     --     if self.clips_update == false then
 
     --     end
     --     gridDirty = true
     --     self.clips_update = true
     -- end
-    if self.clips_received == true then
+    -- if self.clips_received == true then
         self:clipsToDraw()
-    end
-    if self.clips_update == true and self.folder_upodate == false then
+        print("i just drew the clips")
+    -- end
+    if self.clips_update == true and self.folder_update == false then
             if self.folder == true then
-                    self:fullTrackStatusDraw(self.folder_update, 6)
+            print("I'm printing the folder for track", self.trackNumber)
+                    self:fullTrackStatusDraw(6)
             end
-        if self.track_arm == true and self.track_update == false then
+        if self.track_arm == true and self.arm_update == false then
             self:armDrawUpdate()
         end
     end
@@ -135,11 +140,10 @@ function Track:setTrackState ()
 gridDirty = true
 end
 
-function Track:fullTrackStatusDraw(keystate_update, value)
+function Track:fullTrackStatusDraw(value)
         for i = 1,16 do
                 clipDrawArray[i][self.trackNumber] = value
          end
-        keystate_update.state = true
 gridDirty = true
 end
 
@@ -177,7 +181,7 @@ function Track:printClipStates()
 end
 
 function Track:armDrawUpdate()
-   -- print("armDrawUpdate was started for track", self.trackNumber)
+    print("armDrawUpdate was started for track", self.trackNumber)
     -- if self.track_arm and self.clips_update then
     --     for i = 1,16 do
     --         local value = self.clips[i].state
