@@ -6,23 +6,31 @@ local Track = {}
 function Track:new()
     local newObj = {
         track_arm = false,
+        arm_received = false,
         arm_update = true,
         selected = false,
+        selected_received = false,
         selected_update = true,
         solo = false,
+        solo_received = false,
         solo_update = true,
         other_solo = false,
+        other_solo_received = false,
         other_solo_update = true,
         mute = false,
+        mute_received = false,
         mute_update = true,
         folder = false,
+        folder_received = false,
         folder_update = true,
         clips = {},
-        clips_update = true,
+        clips_received = false,
+        clips_update = false,
         playing_clip = 0,
+        playing_clip_recieved = false,
         playing_clip_update = true,
         alt_launch = false,
-        width = width,
+        firstBoot = true,
     }
 
     for i = 1, 16 do
@@ -40,6 +48,14 @@ function Track:getClips()
     return self.clips
 end
 
+function Track:firstBootDraw()
+    if self.firstBoot and self.arm_received and self.clips_received then
+        print("track arm is", self.track_arm, "for track", self.trackNumber)
+        self:setTrackState()
+        self.firstBoot = false
+    end
+end
+
 -- Initialize 16 track instances and return them in a table
 function Track:initTracks()
     local tracks = {}
@@ -52,142 +68,175 @@ function Track:initTracks()
     return tracks
 end
 
-
 function Track:setClipState(clipIndex, value)
-    -- if clipIndex >= 1 and clipIndex <=16 then
-    if self.folder == true then
-        self:fullTrackStatusDraw(self.folder, self.folder_update, 6)
-    end
+    if clipIndex >= 1 and clipIndex <=16 then
         self.clips[clipIndex].state = value
-        if self.folder == false and clipIndex <= 16 then
-            local clipLedValue = self.clips[clipIndex].state == 1 and 10 or 0
-            self:clipDrawUpdate(clipIndex, clipLedValue)
-            end
-        --print("in track no", self.trackNumber, "slot number", clipIndex, "is a", value)
-        self.clips_update = false
-    -- if self.arm_update == false then
-
-    -- end
-    -- self:trackStatusDraws()
-end
-
-function Track:clipDrawUpdate(clipIndex, clipLedValue)
-    if clipIndex >= 1 and clipIndex <= 16 then
-            clipDrawArray[clipIndex][self.trackNumber] = clipLedValue
-    --print("in track", y, "clip No", x, "is ", clipLedValue)
     end
-    --     for x = 1, 16 do
-    --         for y = 1, 16 do
-    --             print("gridDrawArray[" .. x .. "][" .. y .. "] = " .. gridDrawArray[x][y])
-    --         end  
-    -- end
-        self.clips_update = true   
-        gridDirty = true
-end
-
-function Track:fullTrackStatusDraw(keystate, keystate_update, args)
-    --print("The full track is passing for ", keystate)
-    if keystate_update == false and keystate == true then
-                for i = 1,16 do
-                        clipDrawArray[i][self.trackNumber] = args
-                 end
-            end
-        keystate_update = true
-        gridDirty = true
-      -- print("I've updated the,", keystate, "gridArray Value for track ", self.trackNumber)
+    self.clips_received = true
+    if self.firstBoot == true then
+        self:firstBootDraw()
+    else self:setTrackState()
+    end
 end
 
 function Track:setTrackArm(value)
+    self.arm_received = true
+    self.track_arm_update = false
     self.track_arm = value
-    -- self:checkClipValues()
+   -- print("a track was armed")
+   if self.firstBoot == true then
+    self:firstBootDraw()
+   else self:setTrackState()
+   end
     --print("track no' are state", self.trackNumber, "is ", value)
-    self.arm_update = false
+
 end
 
--- function FullArrayDraw()
+function Track:clipsToDraw()
+    for i = 1,16 do
+    local clipLedValue = self.clips[i].state == 1 and 10 or 0
+    clipDrawArray[i][self.trackNumber] = clipLedValue
+    end
+    self.clips_update = true
+    self.clips_received = false
+end
 
--- function Track:setClipState(clipIndex, state)
+
+function Track:setTrackState ()
+    --     if self.clips_update == false then
+
+    --     end
+    --     gridDirty = true
+    --     self.clips_update = true
+    -- end
+    if self.clips_received == true then
+        self:clipsToDraw()
+    end
+    if self.clips_update == true and self.folder_upodate == false then
+            if self.folder == true then
+                    self:fullTrackStatusDraw(self.folder_update, 6)
+            end
+        if self.track_arm == true and self.track_update == false then
+            self:armDrawUpdate()
+        end
+    end
+    self.clips_update = false
+    self.arm_update = false
+    self.folder_update = false
+    -- if self.clips_update == true then
+    --     if self.folder == true then
+    --         self:fullTrackStatusDraw(self.folder, self.folder_update, 6)
+    --     end
+    --     if self.track_arm == true then
+    --     --print("I am being run in setTrackState")
+    --     self:armDrawUpdate()
+    -- end
+-- end
+gridDirty = true
+end
+
+function Track:fullTrackStatusDraw(keystate_update, value)
+        for i = 1,16 do
+                clipDrawArray[i][self.trackNumber] = value
+         end
+        keystate_update.state = true
+gridDirty = true
+end
+
+-- function Track:clipDrawUpdate(clipIndex, clipLedValue)
 --     if clipIndex >= 1 and clipIndex <= 16 then
---         self.clips[clipIndex] = { state = state }
---         --print("in track no", self.trackNumber, "slot number", clipIndex, "is a", state)
---     else
---         --print("Invalid clip index")
+--             -- clipDrawArray[clipIndex][self.trackNumber] = clipLedValue
+--     --print("in track", y, "clip No", x, "is ", clipLedValue)
 --     end
+
+        -- self.clips_update = true   
+        -- gridDirty = true
 -- end
 
 
--- function Track:printClipStates()
+-- function Track:setTrackArm(value)
+--     self.arm_update = false
+--     self.arm_received = true
+--     self.track_arm = value
+--    -- print("a track was armed")
+--    if self.firstBoot == true then
+--    else self:setTrackState()
+--    end
+--     --print("track no' are state", self.trackNumber, "is ", value)
+
+-- end
+
+
+
+function Track:printClipStates()
 --     print("Clip States for Track:")
 --     for i, clip in ipairs(self.clips) do
 --         local state = clip.state
 --         print("Clip " .. i .. ": " .. (state and 1 or 0))
 --     end
--- end
+end
 
--- function Track:armDrawUpdate()
---     if self.track_arm and self.clips_update then
---         for i,clip in ipairs(self.clips) do
---                 print("this is tracking that we have done the math...")
---                 gridDrawArray[i + 1][self.trackNumber] = gridDrawArray[i + 1][self.trackNumber] + 3
---                 gridDrawArray[i + 1][self.trackNumber] = gridDrawArray[i + 1][self.trackNumber] + 3
---                 print("Empty clip number", i, "has been brightened")
---             end
---         end
---     end
---     self.arm_update = true
--- end
-
--- function Track:checkClipValues()
---     for i, clip in ipairs(self.clips) do
---         local state = clip.state
---         print("Clip " .. i .. ": " .. (state and 1 or 0))
---     end
--- end
-
--- Track:armcheckingclips()
+function Track:armDrawUpdate()
+   -- print("armDrawUpdate was started for track", self.trackNumber)
+    -- if self.track_arm and self.clips_update then
+    --     for i = 1,16 do
+    --         local value = self.clips[i].state
+    --         print(value)
+    --     end
+        for i = 1,16 do
+            if self.clips[i].state == 0 then
+                print("this is tracking that we have done the math...")
+                clipDrawArray[i][self.trackNumber] = clipDrawArray[i][self.trackNumber] + 3
+                print("Empty clip number", i, "has been brightened")
+            end
+        end
+    -- end
+    -- end
+    self.arm_update = true
+end
 
 
 
 
 function Track:setSelected(value)
-    self.select = value
-   -- print("track select", self.trackNumber, "is", value)
-    self.selected_update = false
+--     self.select = value
+--    -- print("track select", self.trackNumber, "is", value)
+--     -- self.selected_update = false
 end
 
 
 function Track:setMute(value)
-    self.mute = value
-    self.mute_update = false
-    -- self:fullTrackStatusDraw(self.mute, self.mute_update, -5)
+--     self.mute = value
+--     -- self.mute_update = false
+--     -- self:fullTrackStatusDraw(self.mute, self.mute_update, -5)
 end
 
--- Method to mark if track is a folder
+-- -- Method to mark if track is a folder
 function Track:setFolder(value)
     self.folder = value
     self.folder_update = false
-    -- self:fullTrackStatusDraw(self.folder, self.folder_update, 7)
+--     -- self:fullTrackStatusDraw(self.folder, self.folder_update, 7)
 end
 
 
 
 function Track:setSolo(value)
-    self.solo = value
-   -- print("Received solo data", value, "for", self.trackNumber)
-    self.solo_update = true
+--     self.solo = value
+--    -- print("Received solo data", value, "for", self.trackNumber)
+--     -- self.solo_update = true
 end
 
 
--- Method to change the value of if clip is playing
+-- -- Method to change the value of if clip is playing
 function Track:setPlayingClip(value)
-    self.playing_clip = value
-   -- print(self.trackNumber, value)
-   self.pplaying_clip_update = true
+--     self.playing_clip = value
+--    -- print(self.trackNumber, value)
+-- --    self.playing_clip_update = true
 end
 
--- Method to change the value of mute
+-- -- Method to change the value of mute
 function Track:setAltLaunch(value)
-    self.alt_launch = value
+--     self.alt_launch = value
 end
 
 
