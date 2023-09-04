@@ -44,10 +44,6 @@ function Track:new()
     return newObj
 end
 
-function Track:getClips()
-    return self.clips
-end
-
 function Track:firstBootDraw()
     if self.firstBoot and self.arm_received and self.clips_received and self.selected_received and self.mute_received then
         --print("selected", self.track_arm, "for track", self.trackNumber)
@@ -87,7 +83,7 @@ function Track:setTrackArm(value)
    if self.firstBoot == true then
     self:firstBootDraw()
    else 
-    print("i've passed the first boot, and now doint the set track state")
+  --  print("i've passed the first boot, and now doint the set track state")
     self:setTrackState()
    end
     --print("track no' are state", self.trackNumber, "is ", value)
@@ -105,16 +101,8 @@ end
 
 
 function Track:setTrackState ()
-   -- print("running track state function")
-    --     if self.clips_update == false then
-
-    --     end
-    --     gridDirty = true
-    --     self.clips_update = true
-    -- end
-    -- if self.clips_received == true then
         self:clipsToDraw()
-        print("i just drew the clips")
+       -- print("i just drew the clips")
     -- end
     if self.clips_update == true and self.folder_update == false then
             if self.folder == true then
@@ -142,15 +130,6 @@ function Track:setTrackState ()
     self.arm_update = false
     self.folder_update = false
     self.selected_update = false
-    -- if self.clips_update == true then
-    --     if self.folder == true then
-    --         self:fullTrackStatusDraw(self.folder, self.folder_update, 6)
-    --     end
-    --     if self.track_arm == true then
-    --     --print("I am being run in setTrackState")
-    --     self:armDrawUpdate()
-    -- end
--- end
 gridDirty = true
 end
 
@@ -161,60 +140,11 @@ function Track:folderTrackDraw(value)
 gridDirty = true
 end
 
--- function Track:clipDrawUpdate(clipIndex, clipLedValue)
---     if clipIndex >= 1 and clipIndex <= 16 then
---             -- clipDrawArray[clipIndex][self.trackNumber] = clipLedValue
---     --print("in track", y, "clip No", x, "is ", clipLedValue)
---     end
-
-        -- self.clips_update = true   
-        -- gridDirty = true
--- end
 
 
--- function Track:setTrackArm(value)
---     self.arm_update = false
---     self.arm_received = true
---     self.track_arm = value
---    -- print("a track was armed")
---    if self.firstBoot == true then
---    else self:setTrackState()
---    end
---     --print("track no' are state", self.trackNumber, "is ", value)
-
--- end
-
-
-
-function Track:printClipStates()
---     print("Clip States for Track:")
---     for i, clip in ipairs(self.clips) do
---         local state = clip.state
---         print("Clip " .. i .. ": " .. (state and 1 or 0))
---     end
-end
-
--- function Track:armDrawUpdate()
---     print("armDrawUpdate was started for track", self.trackNumber)
---     -- if self.track_arm and self.clips_update then
---     --     for i = 1,16 do
---     --         local value = self.clips[i].state
---     --         print(value)
---     --     end
---         for i = 1,16 do
---             if self.clips[i].state == 0 then
---                 print("this is tracking that we have done the math...")
---                 clipDrawArray[i][self.trackNumber] = clipDrawArray[i][self.trackNumber] + 3
---                 print("Empty clip number", i, "has been brightened")
---             end
---         end
---     -- end
---     -- end
---     self.arm_update = true
--- end
 
 function Track:adaptiveDrawUpdate(value, calc)
-    print("adaptiveDrawUpdate was started for track", self.trackNumber)
+   -- print("adaptiveDrawUpdate was started for track", self.trackNumber)
     if calc == "plus" then
         for i = 1,16 do
             if self.clips[i].state == 0 then
@@ -290,13 +220,28 @@ function Track:setFolder(value)
 end
 
 
-
 function Track:setSolo(value)
---     self.solo = value
---    -- print("Received solo data", value, "for", self.trackNumber)
---     -- self.solo_update = true
+    --print("track", self.trackNumber, "was solod")
+    self.solo_received = true
+    self.solo__update = false
+    self.solo = value
+    -- if value == true then
+    --     solo_track[self.trackNumber] = true
+    -- else solo_track[self.trackNumber] = false
+    --     for i = 1,16 do
+    --         if solo_track[i] == true then 
+    --             self.other_solo = true
+    --         end
+    --     end
+    -- end
+    self.solo_update = true
 end
-
+function Track:setOtherSolo(value)
+        self.other_solo = value
+        --print("track", self.trackNumber, "has detected other track's solo")
+        print("yo other solo is", self.other_solo)
+    end
+    
 
 -- -- Method to change the value of if clip is playing
 function Track:setPlayingClip(value)
@@ -310,42 +255,4 @@ function Track:setAltLaunch(value)
 --     self.alt_launch = value
 end
 
-
-
-
-
-
-
-
-
 return Track
-
-
-
-    --     for x = 1, 16 do
-    --         for y = 1, 16 do
-    --             print("gridDrawArray[" .. x .. "][" .. y .. "] = " .. gridDrawArray[x][y])
-    --         end  
-    -- end
-
-
-
-    -- function Track:folderDrawUpdate()
---     if self.folder_update == false and self.folder == true then
---                 for i = 1,16 do
---                         gridDrawArray[i][self.trackNumber] = 7
---                  end
---             end
---         self.folder_update = true
---        -- print("I've updated the folder gridArray Value")
--- end
-
--- function Track:adaptiveTrackStatusDraw(args)
---     for i, clip in ipairs(self.clips) do
---         if clip.state == 0 and gridDrawArray[i + 1] then
---             gridDrawArray[i + 1][self.trackNumber] = gridDrawArray[i + 1][self.trackNumber] (args)
---             gridDrawArray[i + 1][self.trackNumber] = gridDrawArray[i + 1][self.trackNumber] (args)
---             --print("Empty clip number", i, "has been brightened")
---         end
---     end
--- end

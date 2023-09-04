@@ -39,6 +39,10 @@ function init()
     solo_held = false
     solod_track = {}
 
+    for x = 1,16 do
+      solod_track[x] = false
+    end
+
     altLaunch_screen = false
     altLaunch_counter = {}
     altLaunch_held = false
@@ -174,6 +178,7 @@ end
 
     if solodTrack then
         processTrackStates(solodTrack, args, "solo")
+        processOtherSolos(solodTrack, args)
         -- print("I see armed track:", armedTrackNumber, args[1])
     end
 
@@ -188,7 +193,29 @@ end
 
   osc.event = osc_in
 
+  function processOtherSolos(trackplayNumber, args)
+    print("I'm detecting a solo somewhere")
+    if trackplayNumber <= 16 and args[1] == 1 then
+      for i = 1,16 do
+        tracks[i]:setOtherSolo(1)
+    end
+  end
+    gridDirty = true
+end
 
+
+  -- function processOtherSolos(trackNumber, args)
+  --   --print("Received OSC message for track " .. trackNumber .. " with args: " .. table.concat(args, ", ") .. " and stateKey: " .. stateKey)
+  --   if trackNumber <= 16 and args[1] == 1 then
+  --     for i = 1,16 do
+  --       local value = true
+  --           tracks[i]:setOtherSolo(value)
+  --         --print("Track " .. trackNumber .. " updated for stateKey " .. stateKey .. " with value " .. tostring(value))
+  --     --else print("Method not found for stateKey " .. stateKey)
+  --     end
+  -- end
+  -- gridDirty = true
+  -- end
 
 local statusFunctionNames = {
   track_arm = "setTrackArm",
@@ -196,7 +223,8 @@ local statusFunctionNames = {
   solo = "setSolo",
   mute = "setMute",
   folder = "setFolder",
-  alt_launch = "setAltLaunch"
+  alt_launch = "setAltLaunch",
+  other_solo = "setOtherSolo"
 
 }
 
