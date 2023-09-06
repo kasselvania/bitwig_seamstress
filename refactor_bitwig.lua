@@ -123,14 +123,14 @@ end
 
   function osc_in(path, args, from)
 
---     local playmsg = string.find(path, "/play") -- this is the function that runs the transport button and updates its state
---     if playmsg then
---         if args[1] == 1 then
---             transporton = true
---                 elseif args[1] == 0 then
---                     transporton = false
---                 end
--- end
+    local playmsg = string.find(path, "/play") -- this is the function that runs the transport button and updates its state
+    if playmsg then
+        if args[1] == 1 then
+            transporton = true
+                elseif args[1] == 0 then
+                    transporton = false
+                end
+end
 
       collectClipData(path, args)
       processTrackOSCMessage(path, args)
@@ -359,20 +359,23 @@ function grid_array_data()
         for x = 1, 16 do
             for y = 1, 16 - 2 do
                 local brightness = clipDrawArray[x][y]
-        print("x:", x, "y:", y, "Brightness:", brightness)
+        --print("x:", x, "y:", y, "Brightness:", brightness)
                 g:led(x, y, brightness)
                 -- print(playPulseValue)
             end
         end
+        if transporton == true then
         for x = 1,16 do
           for y = 1,16 - 2 do
             if clipPlayArray[x][y] == true then
               -- local brightness = playPulseValue
-              print(playPulseValue)
+             -- print(playPulseValue)
               g:led(x,y, playPulseValue)
             end
           end
         end
+      end
+      gridDirty = true
 end
   --print("grid brightness updated")
   gridDirty = true

@@ -80,7 +80,7 @@ function Track:clipsToDraw()
     for i = 1,16 do
     local clipLedValue = self.clips[i].state == 1 and 10 or 0
     clipDrawArray[i][self.trackNumber] = clipLedValue
-    print(i,self.trackNumber,clipLedValue)
+    --print(i,self.trackNumber,clipLedValue)
     end
     self.clips_update = true
     self.clips_received = false
@@ -120,9 +120,10 @@ function Track:setTrackState ()
             --     self:adaptiveDrawUpdate(6, change)
             -- end
         end
-        if self.playing_clip ~= 0 then
+        if self.playing_clip >= 1 then
             -- g:led(self.playing_clip,self.trackNumber,playPulseValue)
             -- print(playPulseValue)
+            print("clip", self.playing_clip, "on track ", self.trackNumber, "is playing")
             clipPlayArray[self.playing_clip][self.trackNumber] = true
             -- clipDrawArray[self.playing_clip][self.trackNumber] = playPulseValue
         end
