@@ -68,8 +68,9 @@ for x = 1,16 do
     globalClock:start()
   
     gridDirty = true -- state that runs a grid.redraw()
+
+    
   
-    playAnimation:start()
   
     Grid_Redraw_Metro = metro.init() -- grid redraw instructions
     Grid_Redraw_Metro.event = function()
@@ -82,6 +83,8 @@ for x = 1,16 do
 
     osc.send(dest, "/refresh",{0})
     
+    init_play = true
+
     gridDirty = true
   end
 
@@ -112,16 +115,32 @@ function pulseLed(x, y, scale, direction) -- animation sprocket fun by lattice f
   gridDirty = true
 end
 
+function initPlaySwitch ()
+  if update then
+    else 
+  end
+end
 
   function osc_in(path, args, from)
 
-    local playmsg = string.find(path, "/play") -- this is the function that runs the transport button and updates its state
+    local playmsg = string.find(path, "/play")
+     update = string.find(path, "/update") -- this is the function that runs the transport button and updates its state
+  if init_play == false then
+    if update then
+      if args[1] then
+        init_play = true
+      end
+    end
+  else
     if playmsg then
         if args[1] == 1 then
             transporton = true
+            playAnimation:start()
                 elseif args[1] == 0 then
                     transporton = false
+                    playAnimation:stop()
                 end
+              end
 end
 
       collectClipData(path, args)

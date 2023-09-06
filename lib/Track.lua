@@ -111,8 +111,8 @@ function Track:setTrackState ()
             self:adaptiveDrawUpdate(6, change)
         end
         for i = 1,16 do
-        if self.playing_clip[i] == 1 then
-            print("there's a playing clip")
+        if self.playing_clip[i] == 1 and transporton == true then
+            --print("there's a playing clip")
             clipDrawArray[i][self.trackNumber] = "pulse"
         end
     end

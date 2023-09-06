@@ -493,8 +493,10 @@ end
 
 
 function osc_in(path, args, from)
-  local playmsg = string.find(path, "/play") -- this is the function that runs the transport button and updates its state
+  local playmsg = string.find(path, "/play")
+  --print(args[1]) -- this is the function that runs the transport button and updates its state
       if playmsg then
+        print(args[1])
           if args[1] == 1 then
               transporton = true
                   elseif args[1] == 0 then
