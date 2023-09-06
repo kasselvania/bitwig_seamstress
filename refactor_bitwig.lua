@@ -16,13 +16,21 @@ g = grid.connect()
 dest = {"localhost", "6666"}
 
 clipDrawArray = {}
+clipPlayArray = {}
+
 playPulseValue = 0
+
+
+
 
 
 function init()
 
-  width = 16
-  height = 16
+   solo_tracks = {}
+   for x = 1,16 do
+    solo_tracks[x] = {}
+   end
+
 
     transporton = false
     arrangementView = true
@@ -47,10 +55,12 @@ function init()
     altLaunch_counter = {}
     altLaunch_held = false
 
-for x = 1,width do
+for x = 1,16 do
   clipDrawArray[x] = {}
-    for y = 1,height do
+  clipPlayArray[x] = {}
+    for y = 1,16 do
       clipDrawArray[x][y] = 0
+      clipPlayArray[x][y] = false
     end
   end
 
@@ -83,32 +93,44 @@ for x = 1,width do
   end
 
 
+--   function grid.add(newGrid)
+--     g = grid.connect(newGrid.port)
+--     print("New grid: " .. newGrid.name .. " plugged in.")
+--     print("Columns: " .. g.cols .. " Rows: " .. g.rows)
+--     width = g.cols
+--     height = g.rows
+-- end
 
-  function grid.add(newGrid)
-    g = grid.connect(newGrid.port)
-    print("New grid: " .. newGrid.name .. " plugged in.")
-    print("Columns: " .. g.cols .. " Rows: " .. g.rows)
-    width = g.cols
-    height = g.rows
-end
 
-function grid_array_data()
-  --print ("grid array data is getting updated")
-  -- this is for drawing in the clips:
-    if arrangementView == true then
-        for x = 1, 16 do
-            for y = 1, 16 - 2 do
-                local brightness = clipDrawArray[x][y]
-        --print("x:", x, "y:", y, "Brightness:", brightness)
-                g:led(x, y, brightness)
-            end
-        end
-end
-  --print("grid brightness updated")
-  gridDirty = true
+
+function pulseLed(x, y, scale, direction) -- animation sprocket fun by lattice for identifying playing clips and play button
+  local phase = globalClock.transport % scale
+  startValue = 0
+  endValue = 16
+
+  if direction then
+    startValue = 16
+    endValue = 0
   end
 
+  ledBrightness = util.round(util.linlin(0, scale, startValue, endValue, phase), 1)
+
+  playPulseValue = ledBrightness
+  --print(playPulseValue)
+  gridDirty = true
+end
+
+
   function osc_in(path, args, from)
+
+--     local playmsg = string.find(path, "/play") -- this is the function that runs the transport button and updates its state
+--     if playmsg then
+--         if args[1] == 1 then
+--             transporton = true
+--                 elseif args[1] == 0 then
+--                     transporton = false
+--                 end
+-- end
 
       collectClipData(path, args)
       processTrackOSCMessage(path, args)
@@ -178,7 +200,10 @@ end
 
     if solodTrack then
         processTrackStates(solodTrack, args, "solo")
-        processOtherSolos(solodTrack, args)
+        updateGlobalSoloState(solodTrack, args)
+        updateOtherSolo ()
+
+
         -- print("I see armed track:", armedTrackNumber, args[1])
     end
 
@@ -193,29 +218,37 @@ end
 
   osc.event = osc_in
 
-  function processOtherSolos(trackplayNumber, args)
-    print("I'm detecting a solo somewhere")
-    if trackplayNumber <= 16 and args[1] == 1 then
-      for i = 1,16 do
-        tracks[i]:setOtherSolo(1)
-    end
+local globalSoloState = false
+
+
+
+-- Function to update the global solo state based on any soloed track
+function updateGlobalSoloState(trackplayNumber, args)
+globalSoloState = false
+  -- print("I'm checking solos")
+  if trackplayNumber <= 16 and args[1] <=1 then
+  local value = args[1]
+    solo_tracks[trackplayNumber] = value
+    --print(value)
   end
-    gridDirty = true
+  for i = 1,16 do
+    if solo_tracks[i] == 1 then
+      globalSoloState = true
+      --print(globalSoloState)
+      return
+  end
+end
+if not globalSoloState then
+  globalSoloState = false
+end
 end
 
-
-  -- function processOtherSolos(trackNumber, args)
-  --   --print("Received OSC message for track " .. trackNumber .. " with args: " .. table.concat(args, ", ") .. " and stateKey: " .. stateKey)
-  --   if trackNumber <= 16 and args[1] == 1 then
-  --     for i = 1,16 do
-  --       local value = true
-  --           tracks[i]:setOtherSolo(value)
-  --         --print("Track " .. trackNumber .. " updated for stateKey " .. stateKey .. " with value " .. tostring(value))
-  --     --else print("Method not found for stateKey " .. stateKey)
-  --     end
-  -- end
-  -- gridDirty = true
-  -- end
+function updateOtherSolo ()
+--print("the state of globalsolo is ")
+  for i = 1, 16 do
+    tracks[i]:setOtherSolo(globalSoloState)
+  end
+end
 
 local statusFunctionNames = {
   track_arm = "setTrackArm",
@@ -249,35 +282,14 @@ end
 
 
 function processPlayStates(trackplayNumber, clipplayNumber, args)
-    if trackplayNumber <= 16 and clipplayNumber <= 16 and args[1] == 1 then
-        tracks[trackplayNumber]:setPlayingClip(clipplayNumber)
-
-    end
-    gridDirty = true
+  if trackplayNumber <= 16 and clipplayNumber <= 16 and args[1] == 1 then
+      tracks[trackplayNumber]:setPlayingClip(clipplayNumber)
+  end
+  gridDirty = true
 end
 
-
-
-  function pulseLed(x, y, scale, direction) -- animation sprocket fun by lattice for identifying playing clips and play button
-    local phase = globalClock.transport % scale
-    startValue = 0
-    endValue = 16
-  
-    if direction then
-      startValue = 16
-      endValue = 0
-    end
-  
-    ledBrightness = util.round(util.linlin(0, scale, startValue, endValue, phase), 1)
-  
-    playPulseValue = ledBrightness
-    --print(playPulseValue)
-    gridDirty = true
-  end
-
-
   function alternateView(x,y,z) -- alt view button function. Currently only toggles variable
-    if x == 12 and y == g.rows or x == 13 and y == g.rows then
+    if x == 12 and y == 16. or x == 13 and y == 16 then
       if z == 1 then
           print(x,y)
           arrangementView = not arrangementView
@@ -324,13 +336,55 @@ end
 end
 
 
+-- function playingClips()
+--   if transporton == true then -- clip playing drawing/animation
+    -- for x = 1,16 do
+    --     for y = 1,14 do
+    --         if clipPlayArray[x][y] == true then
+    --          print(clipPlay[x][y])
+    --             g:led(x,y,playPulseValue)
+    --         end
+    --     end
+    -- end
+--     -- clock.sleep(0.2)
+--      gridDirty = true
+--   end
+-- end
+  
 
-function grid_redraw()
-        for x = 12, 13 do -- altView toggle button
-        g:led(x,g.rows, arrangementView and 15 or 2)
+function grid_array_data()
+  --print ("grid array data is getting updated")
+  -- this is for drawing in the clips:
+    if arrangementView == true then
+        for x = 1, 16 do
+            for y = 1, 16 - 2 do
+                local brightness = clipDrawArray[x][y]
+        print("x:", x, "y:", y, "Brightness:", brightness)
+                g:led(x, y, brightness)
+                -- print(playPulseValue)
+            end
         end
+        for x = 1,16 do
+          for y = 1,16 - 2 do
+            if clipPlayArray[x][y] == true then
+              -- local brightness = playPulseValue
+              print(playPulseValue)
+              g:led(x,y, playPulseValue)
+            end
+          end
+        end
+end
+  --print("grid brightness updated")
+  gridDirty = true
+  end
+function grid_redraw()
+        -- for x = 12, 13 do -- altView toggle button
+        -- g:led(x,g.rows, arrangementView and 15 or 2)
+        -- end
 
 grid_array_data()
 
+-- playingClips()
+
     g:refresh()
-  end
+ end

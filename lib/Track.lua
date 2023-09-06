@@ -45,8 +45,9 @@ function Track:new()
 end
 
 function Track:firstBootDraw()
-    if self.firstBoot and self.arm_received and self.clips_received and self.selected_received and self.mute_received then
-        --print("selected", self.track_arm, "for track", self.trackNumber)
+    --print("there is an attempt to firstBootDraw")
+    if self.firstBoot and self.arm_received and self.clips_received and self.selected_received and self.mute_received and self.solo_received and self.other_solo_received then
+        -- print("I have run the firstbootDraw")
         self:setTrackState()
         self.firstBoot = false
     end
@@ -75,30 +76,15 @@ function Track:setClipState(clipIndex, value)
     end
 end
 
-function Track:setTrackArm(value)
-    self.arm_received = true
-    self.track_arm_update = false
-    self.track_arm = value
-   -- print("a track was armed")
-   if self.firstBoot == true then
-    self:firstBootDraw()
-   else 
-  --  print("i've passed the first boot, and now doint the set track state")
-    self:setTrackState()
-   end
-    --print("track no' are state", self.trackNumber, "is ", value)
-
-end
-
 function Track:clipsToDraw()
     for i = 1,16 do
     local clipLedValue = self.clips[i].state == 1 and 10 or 0
     clipDrawArray[i][self.trackNumber] = clipLedValue
+    print(i,self.trackNumber,clipLedValue)
     end
     self.clips_update = true
     self.clips_received = false
 end
-
 
 function Track:setTrackState ()
         self:clipsToDraw()
@@ -106,16 +92,16 @@ function Track:setTrackState ()
     -- end
     if self.clips_update == true and self.folder_update == false then
             if self.folder == true then
-           -- print("I'm printing the folder for track", self.trackNumber)
+            --print("I'm printing the folder for track", self.trackNumber)
                     self:folderTrackDraw(6)
             end
         if self.track_arm == true and self.arm_update == false then
-            -- self:armDrawUpdate()
+            --self:armDrawUpdate()
             local change = "plus"
             self:adaptiveDrawUpdate(3, change)
         end
         if self.mute == true and self.mute_update == false then
-            print("This track muted", self.trackNumber)
+           -- print("This track muted", self.trackNumber)
             local change = "minus"
             self:adaptiveDrawUpdate(6, change)
         end
@@ -124,12 +110,32 @@ function Track:setTrackState ()
             local change = "all plus"
             self:adaptiveDrawUpdate(3, change)
         end
+        if self.solo == false and self.other_solo == true then
+            --print("I sense a solo")
+            local change = "all minus"
+            self:adaptiveDrawUpdate(6, change)
+            -- if self.solo == false and self.solo_update == false then
+            --     print("trying to add solo")
+            --     local change = "all minus"
+            --     self:adaptiveDrawUpdate(6, change)
+            -- end
+        end
+        if self.playing_clip ~= 0 then
+            -- g:led(self.playing_clip,self.trackNumber,playPulseValue)
+            -- print(playPulseValue)
+            clipPlayArray[self.playing_clip][self.trackNumber] = true
+            -- clipDrawArray[self.playing_clip][self.trackNumber] = playPulseValue
+        end
     end
+    self.solo_update = false
+    self.other_solo = false
+    self.other_solo_update = false
     self.mute_update = false
     self.clips_update = false
     self.arm_update = false
     self.folder_update = false
     self.selected_update = false
+    self.playing_clip_update = false
 gridDirty = true
 end
 
@@ -166,9 +172,14 @@ function Track:adaptiveDrawUpdate(value, calc)
             end
         end
        end
-    self.mute_update = true
-    self.selected_update = true
-    self.arm_update = true
+       if calc == "all minus" then
+        for i = 1,16 do
+            clipDrawArray[i][self.trackNumber] = self:subtraction(clipDrawArray[i][self.trackNumber], value)
+        end
+       end
+    -- self.mute_update = true
+    -- self.selected_update = true
+    -- self.arm_update = true
 end
 
 function Track:addition(a,b)
@@ -181,21 +192,27 @@ function Track:subtraction(a,b)
     return math.max(a - b,0)
 end
 
-
-function Track:setSelected(value)
-    --print("track", self.trackNumber, "was registered by main script")
-    self.selected_received = true
-    self.selected_update = false
-    self.select = value
-   -- print("a track was armed")
+function Track:setTrackArm(value)
+    self.arm_received = true
+    self.track_arm_update = false
+    self.track_arm = value
    if self.firstBoot == true then
     self:firstBootDraw()
    else 
-   --print("i've passed the first boot, and now doint the set track state")
     self:setTrackState()
    end
---    -- print("track select", self.trackNumber, "is", value)
---     -- self.selected_update = false
+end
+
+
+function Track:setSelected(value)
+    self.selected_received = true
+    self.selected_update = false
+    self.select = value
+   if self.firstBoot == true then
+    self:firstBootDraw()
+   else 
+    self:setTrackState()
+   end
 end
 
 
@@ -203,11 +220,9 @@ function Track:setMute(value)
     self.mute_received = true
     self.mute_update = false
     self.mute = value
-   -- print("a track was armed")
    if self.firstBoot == true then
     self:firstBootDraw()
    else 
-   --print("i've passed the first boot, and now doint the set track state")
     self:setTrackState()
    end
 end
@@ -216,38 +231,44 @@ end
 function Track:setFolder(value)
     self.folder = value
     self.folder_update = false
---     -- self:fullTrackStatusDraw(self.folder, self.folder_update, 7)
 end
 
 
 function Track:setSolo(value)
-    --print("track", self.trackNumber, "was solod")
     self.solo_received = true
     self.solo__update = false
     self.solo = value
-    -- if value == true then
-    --     solo_track[self.trackNumber] = true
-    -- else solo_track[self.trackNumber] = false
-    --     for i = 1,16 do
-    --         if solo_track[i] == true then 
-    --             self.other_solo = true
-    --         end
-    --     end
-    -- end
-    self.solo_update = true
+    if self.firstBoot == true then
+        self:firstBootDraw()
+       else 
+        self:setTrackState()
+       end
 end
+
 function Track:setOtherSolo(value)
+        self.other_solo_received = true
+        self.other_solo_update = false
         self.other_solo = value
-        --print("track", self.trackNumber, "has detected other track's solo")
-        print("yo other solo is", self.other_solo)
-    end
-    
+        if self.firstBoot == true then
+            self:firstBootDraw()
+           else 
+            self:setTrackState()
+           end
+end
+
+
 
 -- -- Method to change the value of if clip is playing
 function Track:setPlayingClip(value)
---     self.playing_clip = value
---    -- print(self.trackNumber, value)
--- --    self.playing_clip_update = true
+    self.playing_clip_recieved = true
+    self.playing_clip_update = false
+    self.playing_clip = value
+   --print(self.trackNumber, value)
+   if self.firstBoot == true then
+    self:firstBootDraw()
+   else 
+    self:setTrackState()
+   end
 end
 
 -- -- Method to change the value of mute
