@@ -13,9 +13,10 @@ g = grid.connect()
 dest = {"localhost", "6666"}
 
 clipDrawArray = {}
-clipPlayArray = {}
 
 playPulseValue = 0
+
+transporton = false
 
 function init()
 
@@ -50,10 +51,8 @@ function init()
 
 for x = 1,16 do
   clipDrawArray[x] = {}
-  clipPlayArray[x] = {}
     for y = 1,16 do
       clipDrawArray[x][y] = 0
-      clipPlayArray[x][y] = false
     end
   end
 
@@ -81,11 +80,13 @@ for x = 1,16 do
     end
     Grid_Redraw_Metro:start(1/60)
 
+    osc.send(dest, "/stop", {0})
+
     osc.send(dest, "/refresh",{0})
-    
-    init_play = true
 
     gridDirty = true
+
+    transporton = false
   end
 
 
@@ -115,11 +116,6 @@ function pulseLed(x, y, scale, direction) -- animation sprocket fun by lattice f
   gridDirty = true
 end
 
--- function initPlaySwitch ()
---   if update then
---     else 
---   end
--- end
 
 function launch_scene(sceneNumber) -- this is the function that launches scenes. This may need to be updated dependent on how scene scrolling assigns numbers.
   -- if scenes[sceneNumber] == false then
