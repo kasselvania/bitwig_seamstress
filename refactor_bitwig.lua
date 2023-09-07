@@ -136,11 +136,14 @@ end
         if args[1] == 1 then
             transporton = true
             playAnimation:start()
+            gridDirty = true
                 elseif args[1] == 0 then
                     transporton = false
                     playAnimation:stop()
+                    gridDirty = true
                 end
               end
+              girdDirty = true
 end
 
       collectClipData(path, args)
@@ -214,9 +217,6 @@ end
       if queuedPattern then
       else processPlayStates(trackplayNumber, clipplayNumber, args)
       end
-        
-        if args[1] == 1 then
-        end
     end
   end
 
@@ -287,19 +287,20 @@ function processPlayStates(trackplayNumber, clipplayNumber, args)
   gridDirty = true
 end
 
-  function alternateView(x,y,z) -- alt view button function. Currently only toggles variable
-    if x == 12 and y == 16. or x == 13 and y == 16 then
-      if z == 1 then
-          print(x,y)
-          arrangementView = not arrangementView
-            else
-        end
-    gridDirty = true
+function alternateView(x,y,z) -- alt view button function. Currently only toggles variable
+  if x == 12 and y == 16 or x == 13 and y == 16 then
+    if z == 1 then
+        print(x,y)
+        arrangementView = not arrangementView
+          else
       end
-  end
-
+  gridDirty = true
+    end
+end
   
 function g.key(x,y,z)
+
+  alternateView(x,y,z)
 
     if x == 1 and y == 1 and z == 1 then
         for i, track in ipairs(tracks) do
@@ -334,25 +335,46 @@ end
   
 
 function clipViewScreen()
+  local track_numbers
+  local scene_numbers
+  for scene_numbers = 1,16 do
+    for track_numbers = 1,16 do
+      local brightness = clipDrawArray[track_numbers][scene_numbers]
+    end
+  end
     if arrangementView == true then
-        for x = 1, 16 do
-            for y = 1, 16 - 2 do
-              local brightness = clipDrawArray[x][y]
+        for scene_draw = 1, 16 do
+            for track_draw = 1, 14 do
+              local brightness = clipDrawArray[scene_draw][track_draw]
               if brightness == "pulse" then
-                g:led(x,y,playPulseValue)
-              else g:led(x, y, brightness)
+                g:led(scene_draw,track_draw+1,playPulseValue)
+              else g:led(scene_draw, track_draw+1, brightness)
+                g:led(scene_draw,1, 15)
               end
             end
         end
-
+      end
+      if arrangementView == false then
+      for track_draw = 1, 16 do
+        for scene_draw = 1, 14 do
+          local brightness = clipDrawArray[scene_draw][track_draw]
+          if brightness == "pulse" then
+            g:led(track_draw+1,scene_draw,playPulseValue)
+          else g:led(track_draw+1,scene_draw, brightness)
+            g:led(1,scene_draw, 15)
+          end
+        end
+    end
 end
   gridDirty = true
   end
+
+
 function grid_redraw()
 
 clipViewScreen()
-
-
-
+for x = 12, 13 do -- altView toggle button
+  g:led(x,16, arrangementView and 15 or 2)
+end
     g:refresh()
  end

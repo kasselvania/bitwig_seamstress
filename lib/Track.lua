@@ -110,11 +110,13 @@ function Track:setTrackState ()
             local change = "all minus"
             self:adaptiveDrawUpdate(6, change)
         end
+        if transporton == true then
         for i = 1,16 do
-        if self.playing_clip[i] == 1 and transporton == true then
+        if self.playing_clip[i] == 1 then
             --print("there's a playing clip")
             clipDrawArray[i][self.trackNumber] = "pulse"
         end
+    end
     end
     end
     self.solo_update = false
@@ -247,6 +249,12 @@ function Track:setPlayingClip(clipplayNumber, value)
     self:setTrackState()
    end
 end
+
+
+
+
+
+
 
 -- -- Method to change the value of clip launch
 function Track:setAltLaunch(value)
