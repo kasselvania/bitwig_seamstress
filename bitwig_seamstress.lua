@@ -391,16 +391,11 @@ end
  alternateView(x,y,z)
  
   if x == 1 and y<=14 and z==1 and mute_screen == false and solo_screen == false then -- This is the trigger for the scenes.
-        -- transporton = true
-        --playbutton()
-      -- if mute_screen == false and solo_screen == false then
           launch_scene(y)
           scenes[y] = z
           gridDirty = true
               else
                 scenes[y] = false
-              -- end
-              -- if mute_screen == true    
   end
     
   
