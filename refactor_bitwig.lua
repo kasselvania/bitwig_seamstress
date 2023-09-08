@@ -166,7 +166,21 @@ end
                   trackarmed = false
                   --print("unarmed")
                 end
-              end
+  end
+     local currentView  = string.find(path, "/layout")
+    --print("received layout message")
+             if currentView then
+            if args[1] == "arrange" then
+                      print("arrangement mode")
+                      arrangementView = true
+            end
+            if args[1] == "mix" then
+              print("mix mode")
+              arrangementView = false
+            end
+            gridDirty = true
+         end
+            
 
 
 local trackRecordState = string.find(path, "/record") -- pulls state of global reecord from OSC
@@ -323,6 +337,7 @@ function alternateView(x,y,z) -- alt view button function. Currently only toggle
         arrangementView = not arrangementView
           else
       end
+      osc.send(dest, "/layout",{arrangementView})
   gridDirty = true
     end
 end

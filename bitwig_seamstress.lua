@@ -518,6 +518,16 @@ function osc_in(path, args, from)
         end
       end
 
+  local currentView  = string.find(path, "/layout")
+  print("received layout message")
+      if currentView then
+        if args[1] == "arrange" then
+          print("arrangement mode")
+          arrangementView = true
+        else arrangementView = false
+        end
+      end
+
   
 local pattern = "/track/(%d+)/clip/(%d+)/hasContent"    -- Extract track and clip number for existing clips
     local track, clip = path:match(pattern)
