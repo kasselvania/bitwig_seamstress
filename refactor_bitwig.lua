@@ -544,7 +544,47 @@ end
  alternateView(x,y,z)
 
  stateScreenKeys(x,y,z)
+
+ processArrowKeys(x,y,z)
  
+end
+
+function processArrowKeys(x, y, z)
+  if arrangementView == false then
+  if x == 16 and y == 16 and z == 1 then --scene scroll increase
+    osc.send(dest, "/track/+",{})
+  end
+
+  if x == 14 and y == 16 and z == 1 then -- scene scroll decrease
+      osc.send(dest, "/track/-",{})
+  end
+
+  if x == 15 and y == 16 and z == 1 then -- scene scroll increase
+      osc.send(dest, "/scene/+",{})
+  end
+
+  if x == 15 and y == 15 and z == 1 then -- scene scroll decrease
+      osc.send(dest, "/scene/-",{})
+  end
+else
+  if x == 16 and y == 16 and z == 1 then --scene scroll increase
+    osc.send(dest, "/scene/+",{})
+  end
+
+  if x == 14 and y == 16 and z == 1 then -- scene scroll decrease
+      osc.send(dest, "/scene/-",{})
+  end
+
+  if x == 15 and y == 16 and z == 1 then -- scene scroll increase
+      osc.send(dest, "/track/+",{})
+  end
+
+  if x == 15 and y == 15 and z == 1 then -- scene scroll decrease
+      osc.send(dest, "/track/-",{})
+  end
+
+
+end
 end
 
 function playbutton() -- play button and transporton function
@@ -684,7 +724,12 @@ end
   end
   end
 
-
+  function drawNavigationArrows() -- current navigation arrows
+    g:led(14,16,10)
+    g:led(15,16,10)
+    g:led(16,16,10)
+    g:led(15,15,10)
+  end
 
 function grid_redraw()
 
@@ -717,6 +762,8 @@ function grid_redraw()
   altLaunchLEDToggle()
 
 clipViewScreen()
+
+drawNavigationArrows()
 for x = 12, 13 do -- altView toggle button
   g:led(x,16, arrangementView and 15 or 2)
 end
