@@ -335,11 +335,16 @@ function alternateView(x,y,z) -- alt view button function. Currently only toggle
     if z == 1 then
         print(x,y)
         arrangementView = not arrangementView
-          else
+        if arrangementView == true then
+          osc.send(dest, "/layout", {"arrange"})
+        elseif arrangementView == false then
+          osc.send(dest, "/layout", {"mix"})
+        end
+        end
       end
-      osc.send(dest, "/layout",{arrangementView})
-  gridDirty = true
-    end
+    -- end
+
+    gridDirty = true
 end
 
 
