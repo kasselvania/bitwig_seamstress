@@ -180,7 +180,6 @@ end
             end
             gridDirty = true
          end
-            
 
 
 local trackRecordState = string.find(path, "/record") -- pulls state of global reecord from OSC
@@ -237,7 +236,7 @@ end
     
 
     if trackgroup then
-      local convertedValue = args[1] == "group" and 1 or nil
+      local convertedValue = args[1] == "group" and 1 or 0
         processTrackStates(trackgroup, {convertedValue}, "folder")
     end
 

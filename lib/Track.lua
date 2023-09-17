@@ -90,7 +90,8 @@ end
 
 function Track:setTrackState ()
         self:clipsToDraw()
-    if self.clips_update == true and self.folder_update == false then
+    -- if self.clips_update == true and self.folder_update == false then
+    if self.clips_update == true then
             if self.folder == true then
                     self:folderTrackDraw(6)
             end
@@ -208,8 +209,14 @@ end
 
 -- -- Method to mark if track is a folder
 function Track:setFolder(value)
-    self.folder = value
+    print(self.trackNumber, value)
     self.folder_update = false
+    self.folder = value
+    if self.firstBoot == true then
+        self:firstBootDraw()
+       else 
+        self:setTrackState()
+       end
 end
 
 -- -- Method to mark if track is solo'd
