@@ -26,6 +26,12 @@ function init()
    end
 
 
+  grid_connected = g.device~= nil and true or false -- ternary operator, eg. http://lua-users.org/wiki/TernaryOperator
+  columns = grid_connected and g.device.cols or 16 -- keep track of device columns
+  rows = grid_connected and g.device.rows or 16
+
+  print(columns, rows)
+
     transporton = false
     arrangementView = true
 
@@ -90,13 +96,13 @@ for x = 1,16 do
   end
 
 
---   function grid.add(newGrid)
---     g = grid.connect(newGrid.port)
---     print("New grid: " .. newGrid.name .. " plugged in.")
---     print("Columns: " .. g.cols .. " Rows: " .. g.rows)
---     width = g.cols
---     height = g.rows
--- end
+  function grid.add(newGrid)
+    g = grid.connect(newGrid.port)
+    print("New grid: " .. newGrid.name .. " plugged in.")
+    print("Columns: " .. g.cols .. " Rows: " .. g.rows)
+    gwidth = g.cols
+    gheight = g.rows
+end
 
 
 
@@ -330,7 +336,8 @@ function processPlayStates(trackplayNumber, clipplayNumber, args)
 end
 
 function alternateView(x,y,z) -- alt view button function. Currently only toggles variable
-  if x == 12 and y == 16 or x == 13 and y == 16 then
+  if x == 12 and y == rows or x == 13 and y == rows then
+    -- if x == 12 and y == 16 or x == 13 and y == 16 then
     if z == 1 then
         print(x,y)
         arrangementView = not arrangementView
@@ -456,7 +463,7 @@ function g.key(x,y,z)
 
   -- Mute Key Logic
 
-  if x == 6 and y == 16 and z == 1 and mute_screen == false and solo_screen == false then -- if a grid key is pressed...
+  if x == 6 and y == rows and z == 1 and mute_screen == false and solo_screen == false then -- if a grid key is pressed...
     mute_counter = clock.run(mute_hold) -- start the long press counter for that coordinate!
     elseif x==6 and y == 16 and z == 0 and solo_screen == false then -- otherwise, if a grid key is released...
       if mute_counter ~=0 then -- and the long press is still waiting...
@@ -470,13 +477,13 @@ function g.key(x,y,z)
   gridDirty = true
 end
 
-if x == 6 and y == 16 and z == 1 and mute_screen == true and muteTapped == true then
+if x == 6 and y == rows and z == 1 and mute_screen == true and muteTapped == true then
   mute_screen = false
   muteTapped = false
   print("I've left mute screen")
 end
 
-if x == 6 and y == 16 and z == 0 and mute_held == true and mute_screen == true then
+if x == 6 and y == rows and z == 0 and mute_held == true and mute_screen == true then
   mute_screen = false
   print("I was held, and now I'm not")
   mute_held = false
@@ -484,9 +491,9 @@ end
 
 -- -- solo key logic
 
-if x == 8 and y == 16 and z == 1 and solo_screen == false and mute_screen == false then -- if a grid key is pressed...
+if x == 8 and y == rows and z == 1 and solo_screen == false and mute_screen == false then -- if a grid key is pressed...
   solo_counter = clock.run(solo_hold) -- start the long press counter for that coordinate!
-  elseif x==8 and y == 16 and z == 0 and mute_screen == false then -- otherwise, if a grid key is released...
+  elseif x==8 and y == rows and z == 0 and mute_screen == false then -- otherwise, if a grid key is released...
     if solo_counter ~=0 then -- and the long press is still waiting...
       clock.cancel(solo_counter) -- then cancel the long press clock,
       if solo_held == true then
@@ -498,13 +505,13 @@ end
 gridDirty = true
 end
 
-if x == 8 and y == 16 and z == 1 and solo_screen == true and soloTapped == true then
+if x == 8 and y == rows and z == 1 and solo_screen == true and soloTapped == true then
 solo_screen = false
 soloTapped = false
 print("I've left solo screen")
 end
 
-if x == 8 and y == 16 and z == 0 and solo_held == true and solo_screen == true then
+if x == 8 and y == rows and z == 0 and solo_held == true and solo_screen == true then
 solo_screen = false
 print("I was held, and now I'm not")
 solo_held = false
@@ -512,9 +519,9 @@ end
 
 -- altLaunch clip logic
 
-if x == 10 and y == 16 and z == 1 and altLaunch_screen == false and mute_screen == false and solo_screen == false then -- if a grid key is pressed...
+if x == 10 and y == rows and z == 1 and altLaunch_screen == false and mute_screen == false and solo_screen == false then -- if a grid key is pressed...
   altLaunch_counter = clock.run(altLaunch_hold) -- start the long press counter for that coordinate!
-  elseif x==10 and y == 16 and z == 0 and mute_screen == false and solo_screen == false then -- otherwise, if a grid key is released...
+  elseif x==10 and y == rows and z == 0 and mute_screen == false and solo_screen == false then -- otherwise, if a grid key is released...
     if altLaunch_counter ~=0 then -- and the long press is still waiting...
       clock.cancel(altLaunch_counter) -- then cancel the long press clock,
       if altLaunch_held == true then
@@ -526,25 +533,25 @@ end
 gridDirty = true
 end
 
-if x == 10 and y == 16 and z == 1 and altLaunch_screen == true and altLaunchTapped == true then
+if x == 10 and y == rows and z == 1 and altLaunch_screen == true and altLaunchTapped == true then
 altLaunch_screen = false
 altLaunchTapped = false
 print("I've left altLaunch screen")
 end
 
-if x == 10 and y == 16 and z == 0 and altLaunch_held == true and altLaunch_screen == true then
+if x == 10 and y == rows and z == 0 and altLaunch_held == true and altLaunch_screen == true then
 altLaunch_screen = false
 print("I was held, and now I'm not")
 altLaunch_held = false
 end
 
 
-  if x == 1 and y == 16 and z == 1 then -- this function is the play key
+  if x == 1 and y == rows and z == 1 then -- this function is the play key
     playbutton()
     gridDirty = true
   end
 
-  if x == 4 and y == 16 and z == 1 then -- key to arm and unarm tracks. Also displays state of track.
+  if x == 4 and y == rows and z == 1 then -- key to arm and unarm tracks. Also displays state of track.
     if trackarmed == true then
       osc.send(dest, "/track/selected/recarm", {0})
     else osc.send(dest, "/track/selected/recarm", {1})
@@ -552,7 +559,7 @@ end
     gridDirty = true
   end
 
-  if x == 3 and y == 16 and z == 1 then -- key to arm and disarm global record
+  if x == 3 and y == rows and z == 1 then -- key to arm and disarm global record
     if globalRecordArm == true then
       osc.send(dest, "/record", {})
     else osc.send(dest, "/record",{})
@@ -570,35 +577,35 @@ end
 
 function processArrowKeys(x, y, z)
   if arrangementView == false then
-  if x == 16 and y == 16 and z == 1 then --scene scroll increase
+  if x == 16 and y == rows and z == 1 then --scene scroll increase
     osc.send(dest, "/track/+",{})
   end
 
-  if x == 14 and y == 16 and z == 1 then -- scene scroll decrease
+  if x == 14 and y == rows and z == 1 then -- scene scroll decrease
       osc.send(dest, "/track/-",{})
   end
 
-  if x == 15 and y == 16 and z == 1 then -- scene scroll increase
+  if x == 15 and y == rows and z == 1 then -- scene scroll increase
       osc.send(dest, "/scene/+",{})
   end
 
-  if x == 15 and y == 15 and z == 1 then -- scene scroll decrease
+  if x == 15 and y == rows-1 and z == 1 then -- scene scroll decrease
       osc.send(dest, "/scene/-",{})
   end
 else
-  if x == 16 and y == 16 and z == 1 then --scene scroll increase
+  if x == 16 and y == rows and z == 1 then --scene scroll increase
     osc.send(dest, "/scene/+",{})
   end
 
-  if x == 14 and y == 16 and z == 1 then -- scene scroll decrease
+  if x == 14 and y == rows and z == 1 then -- scene scroll decrease
       osc.send(dest, "/scene/-",{})
   end
 
-  if x == 15 and y == 16 and z == 1 then -- scene scroll increase
+  if x == 15 and y == rows and z == 1 then -- scene scroll increase
       osc.send(dest, "/track/+",{})
   end
 
-  if x == 15 and y == 15 and z == 1 then -- scene scroll decrease
+  if x == 15 and y == rows-1 and z == 1 then -- scene scroll decrease
       osc.send(dest, "/track/-",{})
   end
 
@@ -619,7 +626,7 @@ end
 
 function stateScreenKeys(col,row,z)
   local scene, track
-  if row >= 1 and row <= 14 then
+  if row >= 1 and row <= rows-2 then
     if arrangementView == true then
    scene = col
    track = row
@@ -630,7 +637,7 @@ function stateScreenKeys(col,row,z)
   if scene <= 16 and track >= 2 and z == 1 and mute_screen == true then -- system for muting tracks
     --print(scene, track)
     osc.send(dest, "/track/"..(track-1).."/mute/-",{})
-  if scene>=2 and track <=14 and z==0 and mute_screen == true then
+  if scene>=2 and track <=rows-2 and z==0 and mute_screen == true then
     gridDirty = true
   end
 end
@@ -660,7 +667,7 @@ end
 gridDirty = true
 end
 
-if track == 1 and scene <= 16 and z==1 and mute_screen == false and solo_screen == false then -- This is the trigger for the scenes.
+if track == 1 and scene <= rows and z==1 and mute_screen == false and solo_screen == false then -- This is the trigger for the scenes.
   launch_scene(scene)
   -- scenes[scene] = z
   gridDirty = true
@@ -697,7 +704,7 @@ function clipViewScreen()
   end
     if arrangementView == true then
         for scene_draw = 1, 16 do
-            for track_draw = 1, 14 do
+            for track_draw = 1, rows-2 do
               local brightness = clipDrawArray[scene_draw][track_draw]
               if brightness == "pulse" then
                 g:led(scene_draw,track_draw+1,playPulseValue)
@@ -709,7 +716,7 @@ function clipViewScreen()
       end
       if arrangementView == false then
       for track_draw = 1, 16 do
-        for scene_draw = 1, 14 do
+        for scene_draw = 1, rows-2 do
           local brightness = clipDrawArray[scene_draw][track_draw]
           if brightness == "pulse" then
             g:led(track_draw+1,scene_draw,playPulseValue)
@@ -719,59 +726,62 @@ function clipViewScreen()
         end
     end
 end
+for i = 1,14 do
+  g:led(i,rows-1,0)
+end
   gridDirty = true
   end
 
   function muteLEDToggle()
     if mute_screen == false then
-      g:led(6,16,4)
-    else g:led (6,16,9)
+      g:led(6,rows,4)
+    else g:led (6,rows,9)
     end
   end
   
   function soloLEDToggle()
     if solo_screen == false then
-      g:led(8,16,4)
-    else g:led (8,16,9)
+      g:led(8,rows,4)
+    else g:led (8,rows,9)
   end
   end
   
   function altLaunchLEDToggle()
     if altLaunch_screen == false then
-      g:led(10,16,4)
-    else g:led (10,16,9)
+      g:led(10,rows,4)
+    else g:led (10,rows,9)
   end
   end
 
   function drawNavigationArrows() -- current navigation arrows
-    g:led(14,16,10)
-    g:led(15,16,10)
-    g:led(16,16,10)
-    g:led(15,15,10)
+    g:led(14,rows,10)
+    g:led(15,rows,10)
+    g:led(16,rows,10)
+    g:led(15,rows-1,10)
   end
 
 function grid_redraw()
 
   if transporton == true then -- play button
-    g:led(1,16,playPulseValue)
+    g:led(1,rows,playPulseValue)
       else
-          g:led(1,16,3)  -- if true, use 15. if false, use 3.
+          g:led(1,rows,3)  -- if true, use 15. if false, use 3.
   end
 
   if globalRecordArm == true then -- record button
-    g:led(3,16,playPulseValue)
+    g:led(3,rows,playPulseValue)
   else
-    g:led(3,16,4)
+    g:led(3,rows,4)
   end
 
   if trackarmed == false then -- track arm key
-    g:led(4,16,4)
+    g:led(4,rows,4)
   else
-    g:led(4,16,9)
+    g:led(4,rows,9)
   end
     
   for x = 12, 13 do -- altView toggle button
-      g:led(x,16, arrangementView and 15 or 2)
+      g:led(x,rows, arrangementView and 15 or 2)
   end
 
   muteLEDToggle()
@@ -784,7 +794,7 @@ clipViewScreen()
 
 drawNavigationArrows()
 for x = 12, 13 do -- altView toggle button
-  g:led(x,16, arrangementView and 15 or 2)
+  g:led(x,rows, arrangementView and 15 or 2)
 end
     g:refresh()
  end

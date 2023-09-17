@@ -209,7 +209,7 @@ end
 
 -- -- Method to mark if track is a folder
 function Track:setFolder(value)
-    print(self.trackNumber, value)
+    -- print(self.trackNumber, value)
     self.folder_update = false
     self.folder = value
     if self.firstBoot == true then
