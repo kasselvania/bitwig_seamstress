@@ -95,13 +95,19 @@ for x = 1,16 do
     transporton = false
   end
 
+  function grid.remove(oldGrid)
+    print(g.name.. "says goodbye")
+    grid_connected = false
+    gridDirty = true
+  end
 
   function grid.add(newGrid)
     g = grid.connect(newGrid.port)
+    columns = newGrid.cols
+    rows = newGrid.rows
     print("New grid: " .. newGrid.name .. " plugged in.")
-    print("Columns: " .. g.cols .. " Rows: " .. g.rows)
-    gwidth = g.cols
-    gheight = g.rows
+    print("Columns: " .. nedwGri.cols .. " Rows: " .. newGrid.rows)
+    gridDirty = true
 end
 
 
