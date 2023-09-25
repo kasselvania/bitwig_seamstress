@@ -145,7 +145,7 @@ end
 
 function altClipLaunch(clip, track) -- clip launching function
 osc.send(dest, "/track/" ..track.. "/clip/" ..clip.. "/launchAlt", {1})
--- print(clip,track)
+ print(clip,track)
 end
 
 function altClipRelease(clip, track) -- clip launching function
@@ -578,6 +578,8 @@ end
  stateScreenKeys(x,y,z)
 
  processArrowKeys(x,y,z)
+
+ altStop(x,y,z)
  
 end
 
@@ -631,72 +633,113 @@ function playbutton() -- play button and transporton function
 end
 
 function stateScreenKeys(col,row,z)
-  local scene, track
-  if row >= 1 and row <= rows-2 then
-    if arrangementView == true then
-   scene = col
-   track = row
-    else
-       scene = row
-       track = col
-    end
-  if scene <= 16 and track >= 2 and z == 1 and mute_screen == true then -- system for muting tracks
-    --print(scene, track)
-    osc.send(dest, "/track/"..(track-1).."/mute/-",{})
-  if scene>=2 and track <=rows-2 and z==0 and mute_screen == true then
-    gridDirty = true
-  end
-end
+    local scene, track
+          if row >= 1 and row <= rows-2 then
+              if arrangementView == true then
+                  scene = col
+                  track = row
+              else
+                  scene = row
+                  track = col
+              end
+        if scene <= 16 and track >= 2 and z == 1 and mute_screen == true then -- system for muting tracks
+               --print(scene, track)
+                      osc.send(dest, "/track/"..(track-1).."/mute/-",{})
+            if scene>=2 and track <=rows-2 and z==0 and mute_screen == true then
+                  gridDirty = true
+            end
+        end
 
-  if scene <= 16 and track == 1 and z == 1 and mute_screen == true then -- scene buttons unmute all tracks
-   -- print(scene, track)
-    for i = 1,16 do
-      --print(i)
-    osc.send(dest, "/track/"..i.."/mute/0",{0})
+        if scene <= 16 and track == 1 and z == 1 and mute_screen == true then -- scene buttons unmute all tracks
+            -- print(scene, track)
+              for i = 1,16 do
+                  --print(i)
+                      osc.send(dest, "/track/"..i.."/mute/0",{0})
     
-  end
-  gridDirty = true
-end
+              end
+            gridDirty = true
+        end
   
 
-if scene <= 16 and track >= 2 and z == 1 and solo_screen == true then -- system for soloing track
-  osc.send(dest, "/track/"..(track-1).."/solo/-",{})
-if scene>=2 and track <=14 and z==0 and solo_screen == true then
-  gridDirty = true
-end
-end
+      if scene <= 16 and track >= 2 and z == 1 and solo_screen == true then -- system for soloing track
+            osc.send(dest, "/track/"..(track-1).."/solo/-",{})
+          if scene>=2 and track <=14 and z==0 and solo_screen == true then
+              gridDirty = true
+          end
+      end
 
-if scene <= 16 and track == 1 and z == 1 and solo_screen == true then -- scene buttons unmute all tracks
-for i = 1,16 do
-osc.send(dest, "/track/"..i.."/solo/0",{0})
-end
-gridDirty = true
-end
+      if scene <= 16 and track == 1 and z == 1 and solo_screen == true then -- scene buttons unmute all tracks
+            for i = 1,16 do
+                osc.send(dest, "/track/"..i.."/solo/0",{0})
+            end
+          gridDirty = true
+      end
 
-if track == 1 and scene <= rows and z==1 and mute_screen == false and solo_screen == false then -- This is the trigger for the scenes.
-  launch_scene(scene)
-  -- scenes[scene] = z
-  gridDirty = true
+    if track == 1 and scene <= rows and z==1 and mute_screen == false and solo_screen == false then -- This is the trigger for the scenes.
+        launch_scene(scene)
+        -- scenes[scene] = z
+          gridDirty = true
       -- else
       --   scenes[scene] = false
+    end
+
+    --   if z == 1 and scene <= 16 and track > 1 and mute_screen==false and solo_screen == false and altLaunch_screen == false then -- clip launch, may need alternate view factored
+    --       clipLaunch(scene,track-1)
+    --           print(scene, track-1)
+    --           --print(x-1,y)
+    --               gridDirty = true
+    --                     elseif z == 1 and scene <= 16 and track > 1 and mute_screen==false and solo_screen == false and altLaunch_screen == true then
+    --                           altClipLaunch(scene,track-1)
+    --                     elseif z == 0 and scene <= 16 and track > 1 and altLaunch_screen == true then
+    --                           altClipRelease(scene,track-1)
+    -- end
+  end
 end
 
+function altStop(col,row,z) -- altstop
+  local scene, track
+    if arrangementView == true then
+      scene = col
+      track = row
+    else 
+      scene = row
+      track = col
+    end
+    -- if row >= 1 and row <= rows-2 then
+        if arrangementView == true then   
+          if z == 1 and scene <= 16 and track <= 13 and mute_screen==false and solo_screen == false and altLaunch_screen == false then -- clip launch, may need alternate view factored
+                clipLaunch(scene,track-1)
+                    print(scene, track-1)
+                        --print(x-1,y)
+                            gridDirty = true
+                elseif z == 1 and scene <= 15 and track <= rows-2 and mute_screen==false and solo_screen == false and altLaunch_screen == true then
+                      altClipLaunch(scene,track-1)
+                      print("altLaunching track ", track, scene)
+                elseif z == 0 and scene <= 15 and track <= rows-2 and altLaunch_screen == true then
+                      altClipRelease(scene,track-1)
+                elseif z == 1 and scene == 16 and track <= rows-2 and altLaunch_screen == true then
+                            osc.send(dest, "/track/"..(track-1).. "/clip/stop", {})
+                            print("stopping track", (track-1))
+                end
+          else
+            if z == 1 and scene <= rows-2 and track > 1 and mute_screen==false and solo_screen == false and altLaunch_screen == false then -- clip launch, may need alternate view factored
+              clipLaunch(scene,track-1)
+                  print(scene, track-1)
+                      --print(x-1,y)
+                          gridDirty = true
+              elseif z == 1 and scene <= rows-3 and track > 1 and mute_screen==false and solo_screen == false and altLaunch_screen == true then
+                    altClipLaunch(scene,track-1)
+                    print("altLaunching track ", track)
+              elseif z == 0 and scene <= rows-3 and track > 1 and altLaunch_screen == true then
+                    altClipRelease(scene,track-1)
+              elseif scene == rows-2 and track > 1 and z == 1 and altLaunch_screen == true then
+                          osc.send(dest, "/track/"..(track-1).. "/clip/stop", {})
+                          print("stopping track", (track-1))
+          end 
+      end
+    end
+  -- end
 
-
-
-if z == 1 and scene <= 16 and track > 1 and mute_screen==false and solo_screen == false and altLaunch_screen == false then -- clip launch, may need alternate view factored
-clipLaunch(scene,track-1)
-print(scene, track-1)
---print(x-1,y)
-gridDirty = true
-elseif z == 1 and scene <= 16 and track > 1 and mute_screen==false and solo_screen == false and altLaunch_screen == true then
-altClipLaunch(scene,track-1)
-elseif z == 0 and scene <= 16 and track > 1 and altLaunch_screen == true then
-altClipRelease(scene,track-1)
-end
-
-end
-end
 
   
 
