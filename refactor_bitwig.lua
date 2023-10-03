@@ -13,6 +13,7 @@ g = grid.connect()
 dest = {"localhost", "6666"}
 
 clipDrawArray = {}
+screenDrawGrid = {}
 
 playPulseValue = 0
 
@@ -56,8 +57,10 @@ function init()
     altLaunch_held = false
 
 for x = 1,16 do
+  screenDrawGrid[x] = {}
   clipDrawArray[x] = {}
     for y = 1,16 do
+      screenDrawGrid[x][y] = 0
       clipDrawArray[x][y] = 0
     end
   end
@@ -706,7 +709,8 @@ function altStop(col,row,z) -- altstop
       track = col
     end
     -- if row >= 1 and row <= rows-2 then
-        if arrangementView == true then   
+        if arrangementView == true then
+          if track > 1 then 
           if z == 1 and scene <= 16 and track <= 13 and mute_screen==false and solo_screen == false and altLaunch_screen == false then -- clip launch, may need alternate view factored
                 clipLaunch(scene,track-1)
                     print(scene, track-1)
@@ -721,6 +725,7 @@ function altStop(col,row,z) -- altstop
                             osc.send(dest, "/track/"..(track-1).. "/clip/stop", {})
                             print("stopping track", (track-1))
                 end
+              end
           else
             if z == 1 and scene <= rows-2 and track > 1 and mute_screen==false and solo_screen == false and altLaunch_screen == false then -- clip launch, may need alternate view factored
               clipLaunch(scene,track-1)
@@ -757,8 +762,11 @@ function clipViewScreen()
               local brightness = clipDrawArray[scene_draw][track_draw]
               if brightness == "pulse" then
                 g:led(scene_draw,track_draw+1,playPulseValue)
+                screenDrawGrid[scene_draw][track_draw+1] = playPulseValue
               else g:led(scene_draw, track_draw+1, brightness)
+                screenDrawGrid[scene_draw][math.min(track_draw+1,16)]=brightness
                 g:led(scene_draw,1, 15)
+                screenDrawGrid[scene_draw][1]=15
               end
             end
         end
@@ -769,14 +777,19 @@ function clipViewScreen()
           local brightness = clipDrawArray[scene_draw][track_draw]
           if brightness == "pulse" then
             g:led(track_draw+1,scene_draw,playPulseValue)
+            screenDrawGrid[track_draw+1][scene_draw] = playPulseValue
           else g:led(track_draw+1,scene_draw, brightness)
+             screenDrawGrid[math.min(track_draw+1,16)][scene_draw] = brightness
+            print(track_draw+1,scene_draw)
             g:led(1,scene_draw, 15)
+            screenDrawGrid[scene_draw][1]=15
           end
         end
     end
 end
 for i = 1,14 do
   g:led(i,rows-1,0)
+  screenDrawGrid[i][rows-1]=0
 end
   gridDirty = true
   end
@@ -784,53 +797,70 @@ end
   function muteLEDToggle()
     if mute_screen == false then
       g:led(6,rows,4)
+      screenDrawGrid[6][rows]=4
     else g:led (6,rows,9)
+      screenDrawGrid[6][rows]=9
     end
   end
   
   function soloLEDToggle()
     if solo_screen == false then
       g:led(8,rows,4)
+      screenDrawGrid[8][rows]=4
     else g:led (8,rows,9)
+      screenDrawGrid[8][rows]=9
   end
   end
   
   function altLaunchLEDToggle()
     if altLaunch_screen == false then
       g:led(10,rows,4)
+      screenDrawGrid[10][rows]=4
     else g:led (10,rows,9)
+      screenDrawGrid[10][rows]=9
   end
   end
 
   function drawNavigationArrows() -- current navigation arrows
     g:led(14,rows,10)
+    screenDrawGrid[14][rows]=10
     g:led(15,rows,10)
+    screenDrawGrid[15][rows]=10
     g:led(16,rows,10)
+    screenDrawGrid[16][rows]=10
     g:led(15,rows-1,10)
+    screenDrawGrid[15][rows-1]=10
   end
 
 function grid_redraw()
 
   if transporton == true then -- play button
     g:led(1,rows,playPulseValue)
+    screenDrawGrid[1][rows]=playPulseValue
       else
           g:led(1,rows,3)  -- if true, use 15. if false, use 3.
+          screenDrawGrid[1][rows]=3
   end
 
   if globalRecordArm == true then -- record button
     g:led(3,rows,playPulseValue)
+    screenDrawGrid[3][rows]=playPulseValue
   else
     g:led(3,rows,4)
+    screenDrawGrid[3][rows]=4
   end
 
   if trackarmed == false then -- track arm key
     g:led(4,rows,4)
+    screenDrawGrid[4][rows]=4
   else
     g:led(4,rows,9)
+    screenDrawGrid[4][rows]=9
   end
     
   for x = 12, 13 do -- altView toggle button
       g:led(x,rows, arrangementView and 15 or 2)
+      screenDrawGrid[x][rows]=arrangementView and 15 or 2
   end
 
   muteLEDToggle()
@@ -844,6 +874,7 @@ clipViewScreen()
 drawNavigationArrows()
 for x = 12, 13 do -- altView toggle button
   g:led(x,rows, arrangementView and 15 or 2)
+  screenDrawGrid[x][rows]=arrangementView and 15 or 2
 end
     g:refresh()
  end

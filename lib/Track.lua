@@ -82,6 +82,7 @@ function Track:clipsToDraw()
     for i = 1,16 do
             local clipLedValue = self.clips[i].state == 1 and 10 or 0
         clipDrawArray[i][self.trackNumber] = clipLedValue
+        -- screenDrawGrid[i][self.trackNumber] = clipLedValue
         end
     gridDirty = true
     self.clips_update = true
@@ -116,6 +117,7 @@ function Track:setTrackState ()
         if self.playing_clip[i] == 1 then
             --print("there's a playing clip")
             clipDrawArray[i][self.trackNumber] = "pulse"
+            -- screenDrawGrid[i][self.trackNumber] = "pulse"
         end
     end
     end
@@ -135,6 +137,7 @@ end
 function Track:folderTrackDraw(value)
         for i = 1,16 do
                 clipDrawArray[i][self.trackNumber] = value
+                -- screenDrawGrid[i][self.trackNumber] = value
          end
 gridDirty = true
 end
@@ -147,24 +150,28 @@ function Track:adaptiveDrawUpdate(value, calc)
         for i = 1,16 do
             if self.clips[i].state == 0 then
                 clipDrawArray[i][self.trackNumber] = self:addition(clipDrawArray[i][self.trackNumber], value)
+                -- screenDrawGrid[i][self.trackNumber] = self:addition(screenDrawGrid[i][self.trackNumber], value)
                 end
             end
         end
        if calc == "all plus" then
         for i = 1,16 do
             clipDrawArray[i][self.trackNumber] = self:addition(clipDrawArray[i][self.trackNumber], value)
+            -- screenDrawGrid[i][self.trackNumber] = self:addition(screenDrawGrid[i][self.trackNumber], value)
         end
        end
        if calc == "minus" then
         for i = 1,16 do
             if self.clips[i].state == 1 then
                 clipDrawArray[i][self.trackNumber] = self:subtraction(clipDrawArray[i][self.trackNumber], value)
+                -- screenDrawGrid[i][self.trackNumber] = self:subtraction(screenDrawGrid[i][self.trackNumber], value)
             end
         end
        end
        if calc == "all minus" then
         for i = 1,16 do
             clipDrawArray[i][self.trackNumber] = self:subtraction(clipDrawArray[i][self.trackNumber], value)
+            -- screenDrawGrid[i][self.trackNumber] = self:subtraction(screenDrawGrid[i][self.trackNumber], value)
         end
        end
 end
