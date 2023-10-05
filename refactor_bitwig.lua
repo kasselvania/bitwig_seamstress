@@ -752,8 +752,11 @@ function clipViewScreen()
           y_axis = scene_numbers
         end
         if brightness == "pulse" then
-            g:led(x_axis,math.min(y_axis,14),playPulseValue)
-          else g:led(x_axis,math.min(y_axis,14),brightness)
+          y_axis = math.min(y_axis,14)
+            g:led(x_axis,y_axis,playPulseValue)
+          else 
+            y_axis = math.min(y_axis,15)
+            g:led(x_axis,y_axis,brightness)
           end
         end
     end
@@ -830,18 +833,14 @@ function grid_redraw()
     -- screenDrawGrid[4][rows]=9
   end
     
-  -- for x = 12, 13 do -- altView toggle button
-  --     g:led(x,rows, arrangementView and 15 or 2)
-  --     -- screenDrawGrid[x][rows]=arrangementView and 15 or 2
-  -- end
-  
+
+  clipViewScreen()
 
   muteLEDToggle()
 
   soloLEDToggle()
 
   altLaunchLEDToggle()
-
 
 drawNavigationArrows()
 
@@ -851,7 +850,7 @@ for x = 12, 13 do -- altView toggle button
 end
 
 
-clipViewScreen()
+
 
     g:refresh()
  end
