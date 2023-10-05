@@ -137,6 +137,7 @@ end
 function Track:folderTrackDraw(value)
         for i = 1,16 do
                 clipDrawArray[i][self.trackNumber] = value
+                --print ("x axis",i,"y axis",self.trackNumber,"brightness",value)
                 -- screenDrawGrid[i][self.trackNumber] = value
          end
 gridDirty = true
