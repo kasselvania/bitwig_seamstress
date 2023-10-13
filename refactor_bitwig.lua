@@ -31,7 +31,7 @@ function init()
   columns = grid_connected and g.device.cols or 16 -- keep track of device columns
   rows = grid_connected and g.device.rows or 16
 
-  print(columns, rows)
+  --print(columns, rows)
 
     transporton = false
     arrangementView = true
@@ -77,7 +77,6 @@ for x = 1,16 do
   
     gridDirty = true -- state that runs a grid.redraw()
 
-    
   
   
     Grid_Redraw_Metro = metro.init() -- grid redraw instructions
@@ -88,6 +87,14 @@ for x = 1,16 do
       end
     end
     Grid_Redraw_Metro:start(1/60)
+
+
+    screen_dirty = true
+    redraw_metro = metro.init()
+    redraw_metro.time = 1 / 60
+    redraw_metro.event = redraw
+    redraw_metro:start()
+  
 
     osc.send(dest, "/stop", {0})
 
@@ -736,28 +743,78 @@ function altStop(col,row,z) -- altstop
   end
 
 
-  
 
-function clipViewScreen()
-    local x_axis
-    local y_axis
-    for scene_numbers = 1,16 do
-      for track_numbers = 1,16 do
-        local brightness = clipDrawArray[scene_numbers][track_numbers]
-        if arrangementView == true then
-          x_axis = scene_numbers
-          y_axis = math.min(track_numbers+1,16)
+  -- function clipViewScreen()
+  --   local x_axis
+  --   local y_axis
+  --   for scene_numbers = 1,16 do
+  --     for track_numbers = 1,16 do
+  --       local brightness = clipDrawArray[scene_numbers][track_numbers]
+  --       if arrangementView == true then
+  --         x_axis = scene_numbers
+  --         y_axis = math.min(track_numbers+1,14)
+  --       else
+  --         x_axis = math.min(track_numbers+1,16)
+  --         y_axis = scene_numbers
+  --       end
+  --       if brightness == "pulse" then
+  --         y_axis = math.min(y_axis,14)
+  --           g:led(x_axis,y_axis,playPulseValue)
+  --         else 
+  --           g:led(x_axis,y_axis,brightness)
+  --         end
+  --       end
+  --   end
+  --   for i = 1,16 do
+  --     if arrangementView == true then
+  --         g:led(i,1,15)
+  --     else g:led(1,math.min(i,14),15)
+  --     end
+  --   end
+  --   gridDirty = true
+  -- end
+
+
+  function processTrack(scene_numbers, track_numbers, brightness)
+    local x_axis, y_axis
+    
+    if arrangementView == true then
+        x_axis = scene_numbers
+        if track_numbers <= 13 then
+            y_axis = track_numbers + 1
         else
-          x_axis = math.min(track_numbers+1,16)
-          y_axis = scene_numbers
+            return -- Skip drawing logic for tracks 14-16
         end
-        if brightness == "pulse" then
-          y_axis = math.min(y_axis,14)
-            g:led(x_axis,y_axis,playPulseValue)
-          else 
-            y_axis = math.min(y_axis,15)
-            g:led(x_axis,y_axis,brightness)
-          end
+    else
+        x_axis = math.min(track_numbers + 1, 16)
+        y_axis = scene_numbers
+    end
+    
+    -- Debugging prints
+    -- print("Track:", track_numbers, "Scene:", scene_numbers, "x_axis:", x_axis, "y_axis:", y_axis, "Brightness:", brightness)
+    
+    -- LED control
+
+    
+
+    if brightness == "pulse" then
+        g:led(x_axis, math.min(y_axis,14), playPulseValue)
+    else
+        g:led(x_axis, math.min(y_axis,14), brightness)
+    end
+    
+    -- Additional debug print for y=14
+    if y_axis == 14 then
+        -- print("LED set at y=14 with x:", x_axis, "Brightness:", brightness)
+    end
+end
+
+-- Main function
+function clipViewScreen()
+    for scene_numbers = 1,16 do
+        for track_numbers = 1,16 do
+            local brightness = clipDrawArray[scene_numbers][track_numbers]
+            processTrack(scene_numbers, track_numbers, brightness)
         end
     end
     for i = 1,16 do
@@ -767,7 +824,10 @@ function clipViewScreen()
       end
     end
     gridDirty = true
-  end
+  -- end
+end
+
+
 
   function muteLEDToggle()
     if mute_screen == false then
@@ -850,7 +910,62 @@ for x = 12, 13 do -- altView toggle button
 end
 
 
-
-
     g:refresh()
  end
+
+
+local SCREEN_WIDTH, SCREEN_HEIGHT = screen.get_size()
+
+local GRID_SIZE = 16
+local EDGE_PADDING = 0.05 * SCREEN_HEIGHT
+local matrix_size = SCREEN_HEIGHT - 2 * EDGE_PADDING
+
+-- Using the logic described above:
+local BUTTON_PADDING = matrix_size / (3 * GRID_SIZE - 2)
+local OUTER_PADDING = BUTTON_PADDING
+local available_space = matrix_size - 2 * OUTER_PADDING
+local total_padding_space = (GRID_SIZE - 1) * BUTTON_PADDING
+local total_button_space = available_space - total_padding_space
+local BUTTON_SIZE = total_button_space / GRID_SIZE
+
+local left_padding = (SCREEN_WIDTH - matrix_size) / 2
+
+function grid_x_to_screen_x(x)
+  return left_padding + OUTER_PADDING + (x - 1) * (BUTTON_SIZE + BUTTON_PADDING)
+end
+
+function grid_y_to_screen_y(y)
+  return EDGE_PADDING + OUTER_PADDING + (y - 1) * (BUTTON_SIZE + BUTTON_PADDING)
+end
+
+function redraw_grid_btn(x, y)
+  screen.move(grid_x_to_screen_x(x), grid_y_to_screen_y(y))
+  screen.rect(BUTTON_SIZE, BUTTON_SIZE)
+end
+
+function grid_illustration()
+  -- outer edge
+  screen.move(left_padding, EDGE_PADDING)
+  screen.rect(matrix_size, matrix_size)
+  
+  -- buttons
+  for x = 1, GRID_SIZE do 
+    for y = 1, GRID_SIZE do
+      redraw_grid_btn(x, y)
+    end
+  end
+end
+
+
+function redraw()
+  if screen_dirty then
+    screen.clear()
+    screen.color(255, 255, 255)
+    
+    grid_illustration()
+
+    screen.refresh()
+    screen_dirty = false
+  end
+end
+
