@@ -744,37 +744,6 @@ function altStop(col,row,z) -- altstop
 
 
 
-  -- function clipViewScreen()
-  --   local x_axis
-  --   local y_axis
-  --   for scene_numbers = 1,16 do
-  --     for track_numbers = 1,16 do
-  --       local brightness = clipDrawArray[scene_numbers][track_numbers]
-  --       if arrangementView == true then
-  --         x_axis = scene_numbers
-  --         y_axis = math.min(track_numbers+1,14)
-  --       else
-  --         x_axis = math.min(track_numbers+1,16)
-  --         y_axis = scene_numbers
-  --       end
-  --       if brightness == "pulse" then
-  --         y_axis = math.min(y_axis,14)
-  --           g:led(x_axis,y_axis,playPulseValue)
-  --         else 
-  --           g:led(x_axis,y_axis,brightness)
-  --         end
-  --       end
-  --   end
-  --   for i = 1,16 do
-  --     if arrangementView == true then
-  --         g:led(i,1,15)
-  --     else g:led(1,math.min(i,14),15)
-  --     end
-  --   end
-  --   gridDirty = true
-  -- end
-
-
   function processTrack(scene_numbers, track_numbers, brightness)
     local x_axis, y_axis
     
@@ -799,8 +768,10 @@ function altStop(col,row,z) -- altstop
 
     if brightness == "pulse" then
         g:led(x_axis, math.min(y_axis,14), playPulseValue)
+        screenDrawGrid[x_axis][math.min(y_axis,14)] = playPulseValue
     else
         g:led(x_axis, math.min(y_axis,14), brightness)
+        screenDrawGrid[x_axis][math.min(y_axis,14)] = brightness
     end
     
     -- Additional debug print for y=14
@@ -820,10 +791,13 @@ function clipViewScreen()
     for i = 1,16 do
       if arrangementView == true then
           g:led(i,1,15)
+          screenDrawGrid[i][1] = 15
       else g:led(1,math.min(i,14),15)
+        screenDrawGrid[1][math.min(i,14)] = 15
       end
     end
     gridDirty = true
+    screen_dirty = true
   -- end
 end
 
@@ -832,65 +806,65 @@ end
   function muteLEDToggle()
     if mute_screen == false then
       g:led(6,rows,4)
-      -- screenDrawGrid[6][rows]=4
+      screenDrawGrid[6][rows]=4
     else g:led (6,rows,9)
-      -- screenDrawGrid[6][rows]=9
+      screenDrawGrid[6][rows]=9
     end
   end
   
   function soloLEDToggle()
     if solo_screen == false then
       g:led(8,rows,4)
-      -- screenDrawGrid[8][rows]=4
+      screenDrawGrid[8][rows]=4
     else g:led (8,rows,9)
-      -- screenDrawGrid[8][rows]=9
+      screenDrawGrid[8][rows]=9
   end
   end
   
   function altLaunchLEDToggle()
     if altLaunch_screen == false then
       g:led(10,rows,4)
-      -- screenDrawGrid[10][rows]=4
+      screenDrawGrid[10][rows]=4
     else g:led (10,rows,9)
-      -- screenDrawGrid[10][rows]=9
+      screenDrawGrid[10][rows]=9
   end
   end
 
   function drawNavigationArrows() -- current navigation arrows
     g:led(14,rows,10)
-    -- screenDrawGrid[14][rows]=10
+    screenDrawGrid[14][rows]=10
     g:led(15,rows,10)
-    -- screenDrawGrid[15][rows]=10
+    screenDrawGrid[15][rows]=10
     g:led(16,rows,10)
-    -- screenDrawGrid[16][rows]=10
+    screenDrawGrid[16][rows]=10
     g:led(15,rows-1,10)
-    -- screenDrawGrid[15][rows-1]=10
+    screenDrawGrid[15][rows-1]=10
   end
 
 function grid_redraw()
 
   if transporton == true then -- play button
     g:led(1,rows,playPulseValue)
-    -- screenDrawGrid[1][rows]=playPulseValue
+    screenDrawGrid[1][rows]=playPulseValue
       else
           g:led(1,rows,3)  -- if true, use 15. if false, use 3.
-          -- screenDrawGrid[1][rows]=3
+          screenDrawGrid[1][rows]=3
   end
 
   if globalRecordArm == true then -- record button
     g:led(3,rows,playPulseValue)
-    -- screenDrawGrid[3][rows]=playPulseValue
+    screenDrawGrid[3][rows]=playPulseValue
   else
     g:led(3,rows,4)
-    -- screenDrawGrid[3][rows]=4
+    screenDrawGrid[3][rows]=4
   end
 
   if trackarmed == false then -- track arm key
     g:led(4,rows,4)
-    -- screenDrawGrid[4][rows]=4
+    screenDrawGrid[4][rows]=4
   else
     g:led(4,rows,9)
-    -- screenDrawGrid[4][rows]=9
+    screenDrawGrid[4][rows]=9
   end
     
 
@@ -939,12 +913,20 @@ function grid_y_to_screen_y(y)
 end
 
 function redraw_grid_btn(x, y)
+  local brightness = screenDrawGrid[x][y]
+  local scaled_brightness = math.floor(brightness * (255 / 15))
+
+
+  screen.color(scaled_brightness, scaled_brightness, scaled_brightness)
+
   screen.move(grid_x_to_screen_x(x), grid_y_to_screen_y(y))
   screen.rect(BUTTON_SIZE, BUTTON_SIZE)
+
 end
 
 function grid_illustration()
   -- outer edge
+  screen.color(255, 255, 255)
   screen.move(left_padding, EDGE_PADDING)
   screen.rect(matrix_size, matrix_size)
   
